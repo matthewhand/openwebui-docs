@@ -37,12 +37,12 @@ jobs:
         run: npm ci
       - name: Print environment variables
         run: |
-          echo "BASE_URL=${{ vars.BASE_URL }}"
-          echo "SITE_URL=${{ vars.SITE_URL }}"
+          echo "BASE_URL=${{ secrets.BASE_URL }}"
+          echo "SITE_URL=${{ secrets.SITE_URL }}"
       - name: Build
         env:
-          BASE_URL: ${{ vars.BASE_URL }}
-          SITE_URL: ${{ vars.SITE_URL }}
+          BASE_URL: ${{ secrets.BASE_URL }}
+          SITE_URL: ${{ secrets.SITE_URL }}
         run: npm run build      
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
