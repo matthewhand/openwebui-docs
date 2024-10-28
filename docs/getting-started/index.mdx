@@ -190,12 +190,11 @@ start.bat
 ```
 
 This builds and launches the frontend and backend servers.
-
 ---
 
 ## Podman Installation (Rootless)
 
-You can also deploy Open WebUI using **Podman**. 
+You can also deploy Open WebUI using **Podman**.
 
 ```bash
 podman run -d -p 3000:8080 -v open-webui:/app/backend/data ghcr.io/open-webui/open-webui:main
@@ -218,12 +217,14 @@ After installing, visit:
   ```bash
   curl http://localhost:11434/v1/models
   ```
+
 Explore more in our [Next Steps](/getting-started/next-steps) guide.
+
 ---
 
 ## Updating Your Docker Installation
 
-For Docker users, updating Open WebUI can be done manually or via **Watchtower**. 
+For Docker users, updating Open WebUI can be done manually or via **Watchtower**.
 
 ### Manual Update
 Stop the container:
@@ -355,5 +356,3 @@ Stay updated with the latest features, troubleshooting tips, and announcements!
 Thank you for choosing Open WebUI! We are committed to providing a powerful, privacy-focused interface for your LLM needs. If you encounter any issues, refer to the [Troubleshooting Guide](/getting-started/troubleshooting).
 
 Happy exploring! 🎉
-
-
