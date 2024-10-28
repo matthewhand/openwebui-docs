@@ -11,8 +11,9 @@ const config: Config = {
   tagline: "ChatGPT-Style WebUI for LLMs (Formerly Ollama WebUI)",
   favicon: "img/favicon.png",
 
-  // Set the production url of your site here
-  url: "https://openwebui.com",
+  // Set the production URL of your site
+  url: process.env.SITE_URL || "https://openwebui.com",
+
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: baseUrl, 
