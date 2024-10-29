@@ -1,6 +1,3 @@
----
-title: "Ollama Inside Docker"
----
 
 ### 🐳 Ollama Inside Docker
 
