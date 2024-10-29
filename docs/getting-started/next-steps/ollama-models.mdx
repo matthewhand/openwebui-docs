@@ -1,0 +1,103 @@
+---
+sidebar_position: 3
+title: "⏩  Next Steps: Ollama Models"
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+Once Open WebUI is deployed, follow these steps to **download and run your first model** with Ollama. Choose your setup scenario below.
+
+## Choose Your Setup
+
+<Tabs groupId="ollama-setup">
+
+<TabItem value="docker-ollama" label="Ollama Inside Docker">
+
+### 🐳 Ollama Inside Docker
+
+If **Ollama is deployed inside Docker** (e.g., using Docker Compose or Kubernetes), the service will be available:
+
+- **Inside the container**: `http://127.0.0.1:11434`
+- **From the host**: `http://localhost:11435` (if exposed via host network)
+
+#### Step 1: Check Available Models
+
+- Inside the container:
+  ```bash
+  curl http://127.0.0.1:11434/v1/models
+  ```
+
+- From the host (if exposed):
+  ```bash
+  curl http://localhost:11435/v1/models
+  ```
+
+This command lists all available models and confirms that Ollama is running.
+
+#### Step 2: Download Llama 3.2
+
+Run the following command **inside the container**:
+```bash
+ollama pull llama3.2
+```
+
+#### Step 3: Access the WebUI
+
+Once everything is set up, access the WebUI at:  
+[http://localhost:3000](http://localhost:3000)
+
+</TabItem>
+<TabItem value="byo-ollama" label="BYO Ollama (External Ollama)">
+
+### 🛠️ Bring Your Own Ollama (BYO Ollama)
+
+If **Ollama is running on the host machine** or another server on your network, follow these steps.
+
+#### Step 1: Check Available Models
+
+- If Ollama is **local**, run:
+  ```bash
+  curl http://127.0.0.1:11434/v1/models
+  ```
+
+- If Ollama is **remote**, use:
+  ```bash
+  curl http://<remote-ip>:11434/v1/models
+  ```
+
+This confirms that Ollama is available and lists the available models.
+
+#### Step 2: Set the OLLAMA_BASE_URL
+
+If Ollama is running **remotely** or on the host, set the following environment variable:
+
+```bash
+export OLLAMA_BASE_URL=http://<remote-ip>:11434
+```
+
+This ensures Open WebUI can reach the remote Ollama instance.
+
+#### Step 3: Download Llama 3.2
+
+From your local or remote machine, run:
+```bash
+ollama pull llama3.2
+```
+
+#### Step 4: Access the WebUI
+
+You can now access the WebUI at:  
+[http://localhost:3000](http://localhost:3000)
+
+</TabItem>
+</Tabs>
+
+## Troubleshooting
+
+If you encounter issues, visit our **[Troubleshooting Guide](../troubleshooting/index.mdx)** for solutions to common problems.
+
+## Explore More
+
+- **[Development Guide](./development.mdx)**: Learn how to contribute to Open WebUI.
+- **[Ollama Documentation](https://ollama.com/)**: Official Ollama resources.

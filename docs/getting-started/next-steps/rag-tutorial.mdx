@@ -1,0 +1,63 @@
+---
+sidebar_position: 5
+title: "⏩ Next Steps: RAG Tutorial"
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# ⏩ Next Steps: RAG Tutorial
+
+In this tutorial, you'll learn how to configure **Retrieval-Augmented Generation (RAG)** with Open WebUI. Follow along to integrate RAG techniques and enhance your system's ability to generate more informed and context-aware responses using documentation or external data sources.
+
+---
+
+<Tabs>
+<TabItem value="overview" label="Overview">
+
+### What is RAG?
+
+Retrieval-Augmented Generation (RAG) combines **LLMs** with **retrieved knowledge** from external sources. This tutorial shows how to configure and leverage RAG in Open WebUI to respond to queries using relevant data from documents or databases.
+
+</TabItem>
+
+<TabItem value="setup" label="Setup">
+
+### RAG Setup
+
+You’ll need to:
+1. **Upload your documents** to be used as the knowledge base.
+2. **Connect Ollama models** with RAG-enabled capabilities.
+3. **Configure pipelines and prompts** within Open WebUI.
+
+```bash
+# Example: Uploading documents
+curl -X POST -F "file=@/path/to/document.pdf" http://localhost:8080/upload
+```
+
+</TabItem>
+
+<TabItem value="examples" label="Examples">
+
+### Example Use Case
+
+Here’s a sample RAG setup where Open WebUI retrieves relevant sections from the documentation before generating a response.
+
+```text
+User: "How do I configure environment variables?"
+System: "Refer to Section 3.2 of the docs: Use the `.env` file to manage configuration."
+```
+
+</TabItem>
+
+<TabItem value="next-steps" label="Next Steps">
+
+### Next Steps
+
+After completing this tutorial:
+- Explore **Pipelines** and **Actions** to automate RAG workflows.
+- Integrate your own knowledge sources.
+- Continue learning with our advanced RAG configuration guides.
+
+</TabItem>
+</Tabs>
