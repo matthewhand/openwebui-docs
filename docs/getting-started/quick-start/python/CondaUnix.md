@@ -1,37 +1,33 @@
 ---
-title: "Kustomize Setup"
+title: "Using Conda for Python"
 ---
 
-# Kustomize Setup for Kubernetes
+# Install with Conda
 
-Kustomize allows you to customize Kubernetes YAML configurations.
-
-## Prerequisites
-
-- Kubernetes cluster is set up.
-- Kustomize is installed.
-
-## Steps
-
-1. **Clone the Open WebUI Manifests:**
+1. **Create a Conda Environment:**
 
    ```bash
-   git clone https://github.com/open-webui/k8s-manifests.git
-   cd k8s-manifests
+   conda create -n open-webui python=3.9
    ```
 
-2. **Apply the Manifests:**
+2. **Activate the Environment:**
 
    ```bash
-   kubectl apply -k .
+   conda activate open-webui
    ```
 
-3. **Verify Installation:**
+3. **Install Open WebUI:**
 
    ```bash
-   kubectl get pods
+   pip install open-webui
    ```
 
-## Access the WebUI
+4. **Start the Server:**
 
-Set up port forwarding or load balancing to access Open WebUI from outside the cluster.
+   ```bash
+   open-webui serve
+   ```
+
+After installation, access Open WebUI at:
+
+[http://localhost:8080](http://localhost:8080)
