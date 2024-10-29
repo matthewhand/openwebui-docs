@@ -9,7 +9,7 @@ Welcome to the **Open WebUI Documentation Hub!** Below is a list of essential gu
 
 ---
 
-## 🚀 Quick Start  
+## ⏱️ Quick Start  
 Get up and running quickly with our [Quick Start Guide](./quick-start).
 
 ---
