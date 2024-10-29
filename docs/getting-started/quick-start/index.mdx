@@ -41,11 +41,12 @@ Choose your preferred installation method below:
 <Tabs>
   <TabItem value="docker" label="Docker">
 
-    <DockerInstall />
-
     <Tabs>
       <TabItem value="docker-compose" label="Docker Compose">
+        <DockerInstall />
         <DockerCompose />
+        <DataStorage />  
+        <DockerUpdating />
       </TabItem>
 
       <TabItem value="swarm" label="Docker Swarm">
@@ -57,14 +58,13 @@ Choose your preferred installation method below:
       </TabItem>
 
       <TabItem value="manual-docker" label="Manual Docker">
+        <DockerInstall />
         <ManualDocker />
+        <DataStorage />  
+        <DockerUpdating />
       </TabItem>
 
     </Tabs>
-
-    <DataStorage />
-
-    <DockerUpdating />
 
   </TabItem>
 
