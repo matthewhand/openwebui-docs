@@ -11,6 +11,8 @@ import { TopBanners } from "@site/src/components/TopBanners";
 import DockerCompose from './docker/docker-compose.mdx';
 import Podman from './docker/podman.mdx';
 import ManualDocker from './docker/manual-docker.mdx';
+import DataStorage from './docker/data-storage.mdx';
+import Updating from './docker/updating.mdx';
 
 // Kubernetes Section Imports
 import Helm from './kubernetes/helm.mdx';
@@ -56,6 +58,8 @@ Choose your preferred installation method below:
         <ManualDocker />
       </TabItem>
     </Tabs>
+   <DataStorage />
+   <Updating />
   </TabItem>
 
   <TabItem value="kubernetes" label="Kubernetes">
@@ -114,9 +118,7 @@ Support for this installation method is provided through their website.
 After installing, visit:
 
 - [http://localhost:3000](http://localhost:3000) to start using OpenWebUI!
-
-- **[Using OpenWebUI]./using-openwebui/index.mdx**: Using OpenWebUI.
-
+- **[Using OpenWebUI](./using-openwebui/index.mdx)**: Using OpenWebUI.
 
 ## Enabling Encryption
 
@@ -133,15 +135,12 @@ This guide provides instructions for setting up **HTTPS encryption** using a rev
 - Basic understanding of reverse proxy configuration.
 
 <Tabs>
-
-<TabItem value="encryption" label="Nginx">
-<HttpsEncryptionNginx />
-</TabItem>
-
-<TabItem value="encryption" label="Cloudflare">
-*(Content coming soon)*
-</TabItem>
-
+  <TabItem value="encryption" label="Nginx">
+    <HttpsEncryptionNginx />
+  </TabItem>
+  <TabItem value="encryption" label="Cloudflare">
+    *(Content coming soon)*
+  </TabItem>
 </Tabs>
 
 This guide demonstrates how to enable **HTTPS encryption** for Open WebUI using Nginx as an example. This setup ensures secure communication and unlocks features like **Voice Calls**, which require HTTPS to function in modern browsers.

@@ -24,7 +24,7 @@ If **Ollama is deployed inside Docker** (e.g., using Docker Compose or Kubernete
 
 - Inside the container:
   ```bash
-  curl http://127.0.0.1:11434/v1/models
+  docker exec -it openwebui curl http://ollama:11434/v1/models
   ```
 
 - From the host (if exposed):
@@ -36,9 +36,9 @@ This command lists all available models and confirms that Ollama is running.
 
 #### Step 2: Download Llama 3.2
 
-Run the following command **inside the container**:
+Run the following command:
 ```bash
-ollama pull llama3.2
+docker exec -it ollama ollama pull llama3.2
 ```
 
 #### Step 3: Access the WebUI
@@ -57,7 +57,7 @@ If **Ollama is running on the host machine** or another server on your network, 
 
 - If Ollama is **local**, run:
   ```bash
-  curl http://127.0.0.1:11434/v1/models
+  curl http://localhost:11434/v1/models
   ```
 
 - If Ollama is **remote**, use:
@@ -72,7 +72,7 @@ This confirms that Ollama is available and lists the available models.
 If Ollama is running **remotely** or on the host, set the following environment variable:
 
 ```bash
-export OLLAMA_BASE_URL=http://<remote-ip>:11434
+export OLLAMA_HOST=<remote-ip>:11434
 ```
 
 This ensures Open WebUI can reach the remote Ollama instance.
@@ -91,12 +91,3 @@ You can now access the WebUI at:
 
 </TabItem>
 </Tabs>
-
-## Troubleshooting
-
-If you encounter issues, visit our **[Troubleshooting Guide](../../troubleshooting/index.mdx)** for solutions to common problems.
-
-## Explore More
-
-- **[Using OpenWebUI]./using-openwebui/index.mdx**: Learn the basics of OpenWebUI.
-- **[Ollama Documentation](https://ollama.com/)**: Official Ollama resources.
