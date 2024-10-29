@@ -39,9 +39,3 @@ Create isolated Python environments using `venv`.
    ```bash
    open-webui serve
    ```
-
-## Access the WebUI
-
-After installation, access Open WebUI at:
-
-[http://localhost:8080](http://localhost:8080)
