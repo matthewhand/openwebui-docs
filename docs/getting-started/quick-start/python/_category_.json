@@ -1,5 +1,7 @@
 {
     "label": "Python",
     "collapsed": true,
-    "items": [],
-  }
+    "link": {
+      "type": "generated-index"
+    }
+}

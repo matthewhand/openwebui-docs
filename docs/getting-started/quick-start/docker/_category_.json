@@ -1,5 +1,7 @@
 {
     "label": "Docker",
     "collapsed": true,
-    "items": []
-  }
+    "link": {
+      "type": "generated-index"
+    }
+}
