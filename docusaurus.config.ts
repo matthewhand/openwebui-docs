@@ -51,12 +51,7 @@ const config: Config = {
           // Remove this to remove the "edit this page" links.
           editUrl: "https://github.com/open-webui/docs/blob/main",
           exclude: [
-            '**/getting-started/advanced-topics/**',
-            '**/getting-started/quick-start/https-encryption/**',
-            '**/getting-started/quick-start/kubernetes/**',
-            '**/getting-started/quick-start/python/**',
-            '**/getting-started/quick-start/docker/**',
-            '**/getting-started/using-openwebui/**',
+            '**/getting-started/tab-**',
           ],
         },
         // blog: false,
