@@ -5,6 +5,11 @@ title: "Using OpenWebUI"
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
+// Importing individual tab contents
+import OllamaModels from './ollama-models.mdx';
+import RAGTutorial from './rag-tutorial.mdx';
+import Encryption from './https-encryption.mdx';
+
 # Using OpenWebUI
 
 Explore the essential concepts and features of Open WebUI, including models, knowledge, prompts, pipes, actions, and more.
@@ -14,11 +19,7 @@ Explore the essential concepts and features of Open WebUI, including models, kno
 <Tabs groupId="openwebui-topics">
 
 <TabItem value="models" label="Ollama Models">
-
-## 🧠 Ollama Models  
-Learn how to manage and run different models with Ollama.  
-*(Content coming soon)*
-
+<OllamaModels />
 </TabItem>
 
 <TabItem value="basics" label="OpenWebUI Basics">
@@ -30,19 +31,11 @@ Understand key components like models, knowledge, prompts, pipes, and actions to
 </TabItem>
 
 <TabItem value="encryption" label="Enabling Encryption">
-
-## 🔒 Enabling Encryption  
-Enable encryption to support secure voice calls.  
-*(Content coming soon)*
-
+<Encryption />
 </TabItem>
 
 <TabItem value="rag" label="RAG Tutorial">
-
-## 📖 RAG Tutorial  
-Step-by-step guide on configuring Retrieval Augmented Generation (RAG) with Open WebUI documentation.  
-*(Content coming soon)*
-
+<RAGTutorial />
 </TabItem>
 
 </Tabs>

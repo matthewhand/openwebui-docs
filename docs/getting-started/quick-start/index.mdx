@@ -69,7 +69,7 @@ chmod +x run-compose.sh
 
 ### Disabling Login for Single User
 
-If you want to disable login for a single-user setup, set the environment variable [`WEBUI_AUTH`](./env-configuration) to `False`. This will bypass the login page.
+If you want to disable login for a single-user setup, set the environment variable `WEBUI_AUTH` to `False`. This will bypass the login page.
 
 :::warning
 You **cannot switch back** from single-user mode to multi-account mode after making this change.
@@ -221,8 +221,6 @@ Ensure your environment is properly configured for Kubernetes, and refer to our 
 
     To update your Kubernetes deployment, follow the standard Helm or Kustomize update procedures based on your initial installation method.
 
-    Refer to the [Troubleshooting Guide](../troubleshooting/index.mdx) for more information on resolving issues.
-
   </TabItem>
 
   <TabItem value="python" label="Python">
@@ -307,7 +305,7 @@ After installation, access Open WebUI at:
 
 ### Development Setup
 
-For developers who want to contribute, follow [Development Guide](./development.mdx).
+For developers who want to contribute, check the Development Guide in [Advanced Topics](./advanced-topics).
 
       </TabItem>
     </Tabs>
@@ -319,10 +317,6 @@ For developers who want to contribute, follow [Development Guide](./development.
     ```bash
     pip install --upgrade open-webui
     ```
-
-    ### Troubleshooting Python Installation
-
-    Ensure that all dependencies are correctly installed. Refer to the [Troubleshooting Tips](#troubleshooting-tips) section for common issues.
 
   </TabItem>
 
@@ -348,32 +342,13 @@ Support for this installation method is provided through their website.
   </TabItem>
 </Tabs>
 
-## Data Storage and Bind Mounts
-
-This project uses [Docker named volumes](https://docs.docker.com/storage/volumes/) to **persist data**. If needed, replace the volume name with a host directory:
-
-**Example**:
-
-```bash
--v /path/to/folder:/app/backend/data
-```
-
-Ensure the host folder has the correct permissions.
-
 ## Next Steps
 
 After installing, visit:
 
-- [http://localhost:3000](http://localhost:3000) to verify the frontend.
-- Use the **Ollama API**: Check the model list with:
+- [http://localhost:3000](http://localhost:3000) to start using OpenWebUI!
 
-  ```bash
-  curl http://localhost:11434/v1/models
-  ```
-
-## Next Steps
-
-- **[Ollama Models](./next-steps/ollama-models.mdx)**: Load a model into Ollama.
+- **[Using OpenWebUI](./using-openwebui.mdx)**: Using OpenWebUI.
 
 ## Join the Community
 
