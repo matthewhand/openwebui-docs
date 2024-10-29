@@ -1,7 +1,12 @@
----
-sidebar_position: 2
-title: "🚀 Quick Start"
----
+# HTTPS using Nginx
+
+Ensuring secure communication between your users and the Open WebUI is paramount. HTTPS (HyperText Transfer Protocol Secure) encrypts the data transmitted, protecting it from eavesdroppers and tampering. By configuring Nginx as a reverse proxy, you can seamlessly add HTTPS to your Open WebUI deployment, enhancing both security and trustworthiness.
+
+This guide provides two methods to set up HTTPS:
+- **Self-Signed Certificates**: Ideal for development and internal use.
+- **Let's Encrypt**: Perfect for production environments requiring trusted SSL certificates.
+
+Choose the method that best fits your deployment needs.
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -11,22 +16,6 @@ import SelfSigned from './tab-nginx/SelfSigned.md';
 import LetsEncrypt from './tab-nginx/LetsEncrypt.md';
 
 <TopBanners />
-
-## How to Install 🚀
-
-:::info **Important Note on User Roles and Privacy:**
-
-- **Admin Creation:** The first account created on Open WebUI gains **Administrator privileges**, controlling user management and system settings.
-- **User Registrations:** Subsequent sign-ups start with **Pending** status, requiring Administrator approval for access.
-- **Privacy and Data Security:** **All your data**, including login details, is **locally stored** on your device. Open WebUI ensures **strict confidentiality** and **no external requests** for enhanced privacy and security.
-
-:::
-
-Choose your preferred installation method below:
-
-- **Docker:** Recommended for most users due to ease of setup and flexibility.
-- **Kubernetes:** Ideal for enterprise deployments that require scaling and orchestration.
-- **Python:** Suitable for low-resource environments or those wanting a manual setup.
 
 <Tabs>
   <TabItem value="self-signed" label="Self-Signed Certificate">
@@ -40,26 +29,11 @@ Choose your preferred installation method below:
 
 ## Next Steps
 
-After installing, visit:
+After setting up HTTPS, access Open WebUI securely at:
 
-- [http://localhost:3000](http://localhost:3000) to access OpenWebUI.
-- or [http://localhost:8080/](http://localhost:8080/) when using a Python deployment.
+- [https://localhost](https://localhost)
 
-You are now ready to start **[Using OpenWebUI](../using-openwebui/index.mdx)**!
-
-## Join the Community
-
-Need help? Have questions? Join our community:
-
-- [Open WebUI Discord](https://discord.gg/5rJgQTnV4s)
-- [GitHub Issues](https://github.com/open-webui/open-webui/issues)
-
-Stay updated with the latest features, troubleshooting tips, and announcements!
-
-## Conclusion
-
-Thank you for choosing Open WebUI! We are committed to providing a powerful, privacy-focused interface for your LLM needs. If you encounter any issues, refer to the [Troubleshooting Guide](../../troubleshooting/index.mdx).
-
-Happy exploring! 🎉
+Ensure that your DNS records are correctly configured if you're using a domain name. For production environments, it's recommended to use Let's Encrypt for trusted SSL certificates.
 
 ---
+
