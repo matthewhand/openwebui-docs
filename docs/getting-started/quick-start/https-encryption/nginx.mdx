@@ -1,9 +1,28 @@
+---
+title: "HTTPS Encryption"
+---
+
+# Enabling HTTPS Encryption for Open WebUI
+
+**Note:** HTTPS encryption is **not required** to operate Open WebUI in most cases. However, certain features—such as **Voice Calls**—will be blocked by modern web browsers unless HTTPS is enabled. If you do not plan to use these features, you can skip this section.
+
+This guide provides instructions for setting up **HTTPS encryption** using a reverse proxy. While **Nginx** is used as an example, other proxies such as **Traefik** or **Caddy** can also be configured similarly. This setup assumes a **Docker Compose deployment** for compatibility.
+
+## Prerequisites
+
+- Docker and Docker Compose are installed.
+- Open WebUI is already deployed and running.
+- Basic understanding of reverse proxy configuration.
+
+---
 
 ### Overview
 
 This example demonstrates setting up **Nginx** as a reverse proxy to enable HTTPS for Open WebUI. It uses **self-signed certificates** for simplicity, but you can substitute trusted certificates if required.
 
-#### Nginx Configuration Files
+---
+
+## Nginx Configuration Files
 
 1. **Create directories for Nginx files:**
 
@@ -63,7 +82,9 @@ http {
 }
 ```
 
-#### Docker Compose Configuration for Nginx
+---
+
+## Docker Compose Configuration for Nginx
 
 Use the following **Docker Compose** configuration to deploy Nginx with Open WebUI:
 
@@ -85,7 +106,7 @@ services:
 
 ---
 
-### Self-Signed Certificates Setup
+## Self-Signed Certificates Setup
 
 The following configuration demonstrates how to generate and use **self-signed SSL certificates**.  
 Note: **Self-signed certificates are not trusted by browsers by default**.
@@ -129,11 +150,6 @@ services:
         -subj "/CN=open-webui"
 ```
 
-> **Tip:** You can extend this setup to secure additional services by creating more configuration files under the `conf.d/` directory.
-
-</TabItem>
-
-</Tabs>
 ---
 
 ## Optional: Extending the HTTPS Setup
@@ -174,3 +190,7 @@ docker compose up -d
 ```
 
 ---
+
+## Conclusion
+
+This guide demonstrates how to enable **HTTPS encryption** for Open WebUI using Nginx as an example. This setup ensures secure communication and unlocks features like **Voice Calls**, which require HTTPS to function in modern browsers.
