@@ -14,9 +14,7 @@ If networking issues arise, use:
 
 Refer to the Podman [documentation](https://github.com/containers/podman) for advanced configurations.
 
-      </TabItem>
-
-      <TabItem value="manual-docker" label="Manual">
+---
 
 ### Manual Docker Installation
 
@@ -38,48 +36,48 @@ If you want to connect **Ollama on another server**:
 docker run -d -p 3000:8080 -e OLLAMA_BASE_URL=http://<server-ip>:11434 ghcr.io/open-webui/open-webui:main
 ```
 
-      </TabItem>
-    </Tabs>
+---
 
-    ### Updating Your Docker Installation
+### Updating Your Docker Installation
 
-    For Docker users, updating Open WebUI can be done manually or via **Watchtower**.
+#### Manual Update
 
-    #### Manual Update
+Stop the container:
 
-    Stop the container:
+```bash
+docker stop open-webui
+```
 
-    ```bash
-    docker stop open-webui
-    ```
+Remove the old container:
 
-    Remove the old container:
+```bash
+docker rm open-webui
+```
 
-    ```bash
-    docker rm open-webui
-    ```
+Pull the latest version:
 
-    Pull the latest version:
+```bash
+docker pull ghcr.io/open-webui/open-webui:main
+```
 
-    ```bash
-    docker pull ghcr.io/open-webui/open-webui:main
-    ```
+Restart the container:
 
-    Restart the container:
+```bash
+docker run -d -p 3000:8080 -v open-webui:/app/backend/data --name open-webui --restart always ghcr.io/open-webui/open-webui:main
+```
 
-    ```bash
-    docker run -d -p 3000:8080 -v open-webui:/app/backend/data --name open-webui --restart always ghcr.io/open-webui/open-webui:main
-    ```
+---
 
-    #### Automated Updates with Watchtower
+#### Automated Updates with Watchtower
 
-    Use **Watchtower** to keep your containers up-to-date automatically.
+Use **Watchtower** to keep your containers up-to-date automatically.
 
-    1. Start Watchtower:
+1. Start Watchtower:
 
-       ```bash
-       docker run --rm --volume /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower --run-once open-webui
-       ```
+   ```bash
+   docker run --rm --volume /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower --run-once open-webui
+   ```
 
-    2. Replace `open-webui` with your container name if different.
+2. Replace `open-webui` with your container name if different.
 
+---
