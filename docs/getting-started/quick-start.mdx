@@ -1,0 +1,457 @@
+---
+sidebar_position: 3
+title: "🚀 Quick Start"
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { TopBanners } from "@site/src/components/TopBanners";
+
+<TopBanners />
+
+## How to Install 🚀
+
+:::info **Important Note on User Roles and Privacy:**
+
+- **Admin Creation:** The first account created on Open WebUI gains **Administrator privileges**, controlling user management and system settings.
+- **User Registrations:** Subsequent sign-ups start with **Pending** status, requiring Administrator approval for access.
+- **Privacy and Data Security:** **All your data**, including login details, is **locally stored** on your device. Open WebUI ensures **strict confidentiality** and **no external requests** for enhanced privacy and security.
+
+:::
+
+Choose your preferred installation method below:
+
+- **Docker:** Recommended for most users due to ease of setup and flexibility.
+- **Kubernetes:** Ideal for enterprise deployments that require scaling and orchestration.
+- **Python:** Suitable for low-resource environments or those wanting a manual setup.
+
+<Tabs>
+  <TabItem value="docker" label="Docker">
+    <Tabs>
+      <TabItem value="docker-compose" label="Docker Compose">
+
+### Using Docker Compose
+
+If Docker Compose is installed, use this command to start Open WebUI:
+
+```bash
+docker compose up -d --build
+```
+
+To install with **Nvidia GPU support**:
+
+```bash
+docker compose -f docker-compose.yaml -f docker-compose.gpu.yaml up -d --build
+```
+
+For **AMD GPUs**, use:
+
+```bash
+HSA_OVERRIDE_GFX_VERSION=11.0.0 docker compose -f docker-compose.yaml -f docker-compose.amdgpu.yaml up -d --build
+```
+
+**Expose the Ollama API:**
+
+```bash
+docker compose -f docker-compose.yaml -f docker-compose.api.yaml up -d --build
+```
+
+**Optional: Run with helper script** (for advanced configuration):
+
+```bash
+chmod +x run-compose.sh
+./run-compose.sh --enable-gpu --build
+```
+
+#### Quick Start with Docker 🐳 (Recommended)
+
+:::tip
+
+### Disabling Login for Single User
+
+If you want to disable login for a single-user setup, set the environment variable [`WEBUI_AUTH`](./env-configuration) to `False`. This will bypass the login page.
+
+:::warning
+You **cannot switch back** from single-user mode to multi-account mode after making this change.
+:::
+
+:::danger **Important: Data Persistence**
+
+When using Docker, ensure the **database is properly mounted** by including:
+
+```bash
+-v open-webui:/app/backend/data
+```
+
+Skipping this step may result in **data loss**.
+
+:::
+
+Ensure the host folder has the correct permissions.
+
+      </TabItem>
+
+      <TabItem value="docker-swarm" label="Docker Swarm">
+
+### Using Docker Swarm
+
+*(Content for Docker Swarm will be added soon. Stay tuned!)*
+
+      </TabItem>
+
+      <TabItem value="podman" label="Podman">
+
+### Podman Installation (Rootless)
+
+You can also deploy Open WebUI using **Podman**.
+
+```bash
+podman run -d -p 3000:8080 -v open-webui:/app/backend/data ghcr.io/open-webui/open-webui:main
+```
+
+If networking issues arise, use:
+
+```bash
+--network=slirp4netns:allow_host_loopback=true
+```
+
+Refer to the Podman [documentation](https://github.com/containers/podman) for advanced configurations.
+
+      </TabItem>
+
+      <TabItem value="manual-docker" label="Manual">
+
+### Manual Docker Installation
+
+If Ollama is already installed, start Open WebUI using:
+
+```bash
+docker run -d -p 3000:8080 -v open-webui:/app/backend/data --name open-webui ghcr.io/open-webui/open-webui:main
+```
+
+For **Nvidia GPU support**:
+
+```bash
+docker run -d -p 3000:8080 --gpus all -v ollama:/root/.ollama -v open-webui:/app/backend/data ghcr.io/open-webui/open-webui:cuda
+```
+
+If you want to connect **Ollama on another server**:
+
+```bash
+docker run -d -p 3000:8080 -e OLLAMA_BASE_URL=http://<server-ip>:11434 ghcr.io/open-webui/open-webui:main
+```
+
+      </TabItem>
+    </Tabs>
+
+    ### Updating Your Docker Installation
+
+    For Docker users, updating Open WebUI can be done manually or via **Watchtower**.
+
+    #### Manual Update
+
+    Stop the container:
+
+    ```bash
+    docker stop open-webui
+    ```
+
+    Remove the old container:
+
+    ```bash
+    docker rm open-webui
+    ```
+
+    Pull the latest version:
+
+    ```bash
+    docker pull ghcr.io/open-webui/open-webui:main
+    ```
+
+    Restart the container:
+
+    ```bash
+    docker run -d -p 3000:8080 -v open-webui:/app/backend/data --name open-webui --restart always ghcr.io/open-webui/open-webui:main
+    ```
+
+    #### Automated Updates with Watchtower
+
+    Use **Watchtower** to keep your containers up-to-date automatically.
+
+    1. Start Watchtower:
+
+       ```bash
+       docker run --rm --volume /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower --run-once open-webui
+       ```
+
+    2. Replace `open-webui` with your container name if different.
+
+  </TabItem>
+
+  <TabItem value="kubernetes" label="Kubernetes">
+    <Tabs>
+      <TabItem value="helm" label="Helm">
+
+### Deploy with Kubernetes - Helm
+
+For **Helm Charts**:
+
+```bash
+helm install open-webui ./helm-chart
+```
+
+      </TabItem>
+
+      <TabItem value="kustomize" label="Kustomize">
+
+### Deploy with Kubernetes - Kustomize
+
+For **Kustomize**:
+
+```bash
+kubectl apply -k ./k8s-manifests
+```
+
+Ensure your environment is properly configured for Kubernetes, and refer to our documentation for further details.
+
+      </TabItem>
+    </Tabs>
+
+    ### Updating Your Kubernetes Deployment
+
+    To update your Kubernetes deployment, follow the standard Helm or Kustomize update procedures based on your initial installation method.
+
+    ### Troubleshooting Kubernetes Deployment
+
+    Ensure your Kubernetes cluster is correctly configured and refer to our [Getting Started](./) guide for troubleshooting.
+
+  </TabItem>
+
+  <TabItem value="python" label="Python">
+    <Tabs>
+      <TabItem value="venv" label="Venv">
+
+### Install with Python and Virtual Environment (venv)
+
+1. **Create a Virtual Environment:**
+
+   ```bash
+   python -m venv venv
+   ```
+
+2. **Activate the Virtual Environment:**
+
+   - On Linux/macOS:
+
+     ```bash
+     source venv/bin/activate
+     ```
+
+   - On Windows:
+
+     ```bash
+     venv\Scripts\activate
+     ```
+
+3. **Install Open WebUI:**
+
+   ```bash
+   pip install open-webui
+   ```
+
+4. **Start the Server:**
+
+   ```bash
+   open-webui serve
+   ```
+
+After installation, access Open WebUI at:
+
+[http://localhost:8080](http://localhost:8080)
+
+      </TabItem>
+
+      <TabItem value="conda" label="Conda">
+
+### Install with Conda
+
+1. **Create a Conda Environment:**
+
+   ```bash
+   conda create -n open-webui python=3.9
+   ```
+
+2. **Activate the Environment:**
+
+   ```bash
+   conda activate open-webui
+   ```
+
+3. **Install Open WebUI:**
+
+   ```bash
+   pip install open-webui
+   ```
+
+4. **Start the Server:**
+
+   ```bash
+   open-webui serve
+   ```
+
+After installation, access Open WebUI at:
+
+[http://localhost:8080](http://localhost:8080)
+
+      </TabItem>
+
+      <TabItem value="development" label="Development">
+
+### Development Setup
+
+For developers who want to contribute, follow [Development Guide](./development.mdx).
+
+      </TabItem>
+    </Tabs>
+
+    ### Updating Python Installation
+
+    To update Open WebUI installed via `pip`:
+
+    ```bash
+    pip install --upgrade open-webui
+    ```
+
+    ### Troubleshooting Python Installation
+
+    Ensure that all dependencies are correctly installed. Refer to the [Troubleshooting Tips](#troubleshooting-tips) section for common issues.
+
+  </TabItem>
+
+  <TabItem value="third-party" label="Third Party">
+    <Tabs>
+      <TabItem value="pinokio-computer" label="Pinokio.computer">
+
+### Pinokio.computer Installation
+
+For installation via Pinokio.computer, please visit their website:
+
+[https://pinokio.computer/](https://pinokio.computer/)
+
+Support for this installation method is provided through their website.
+
+      </TabItem>
+    </Tabs>
+
+    ### Additional Third-Party Integrations
+
+    *(Add information about third-party integrations as they become available.)*
+
+  </TabItem>
+</Tabs>
+
+## Data Storage and Bind Mounts
+
+This project uses [Docker named volumes](https://docs.docker.com/storage/volumes/) to **persist data**. If needed, replace the volume name with a host directory:
+
+**Example**:
+
+```bash
+-v /path/to/folder:/app/backend/data
+```
+
+Ensure the host folder has the correct permissions.
+
+## Next Steps
+
+After installing, visit:
+
+- [http://localhost:3000](http://localhost:3000) to verify the frontend.
+- Use the **Ollama API**: Check the model list with:
+
+  ```bash
+  curl http://localhost:11434/v1/models
+  ```
+
+Explore more in our [Next Steps](./next-steps.mdx) guide.
+
+## Troubleshooting Tips
+
+### 1. Verify Ollama Installation
+
+To ensure Ollama is accessible, run:
+
+```bash
+curl http://localhost:11434/v1/models
+```
+
+If this command returns a list of models, your Ollama instance is working correctly.
+
+### 2. Port Conflicts
+
+- Ensure the **Ollama API** is not blocked by firewalls or conflicting with other services on **port 11434** or **11435**.
+- If you are using Docker Compose, confirm the correct mapping with:
+
+  ```yaml
+  ports:
+    - "11435:11434"
+  ```
+
+### 3. GPU Issues on AMD Systems
+
+Some AMD GPUs require:
+
+```bash
+HSA_OVERRIDE_GFX_VERSION=10.3.0
+```
+
+Apply this environment variable before launching Docker.
+
+### 4. Switching User Modes
+
+**FAQ 1** covers switching from single-user to multi-user mode.
+
+For more in-depth troubleshooting, please refer to our [Troubleshooting Guide](../troubleshooting/).
+
+## Frequently Asked Questions (FAQ)
+
+### 1. How do I switch from single-user to multi-user mode?
+
+You must reconfigure the `WEBUI_AUTH` environment variable and restart the container. **Be cautious**—you cannot switch modes without restarting the application.
+
+### 2. Why can't I access Ollama from another container?
+
+Ensure the following settings:
+
+```bash
+--add-host=host.docker.internal:host-gateway
+```
+
+This allows the containers to communicate with the host machine.
+
+### 3. Additional FAQs
+
+*(Add more frequently asked questions as they arise.)*
+
+## Using the WebUI for the First Time
+
+Once installed, access Open WebUI at:
+
+[http://localhost:3000](http://localhost:3000)
+
+To learn how to use Open WebUI, including loading models and understanding the basics, please refer to our [Next Steps Guide](./next-steps.mdx).
+
+## Join the Community
+
+Need help? Have questions? Join our community:
+
+- [Open WebUI Discord](https://discord.gg/5rJgQTnV4s)
+- [GitHub Issues](https://github.com/open-webui/open-webui/issues)
+
+Stay updated with the latest features, troubleshooting tips, and announcements!
+
+## Conclusion
+
+Thank you for choosing Open WebUI! We are committed to providing a powerful, privacy-focused interface for your LLM needs. If you encounter any issues, refer to the [Troubleshooting Guide](../troubleshooting/).
+
+Happy exploring! 🎉
