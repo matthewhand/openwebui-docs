@@ -221,9 +221,7 @@ Ensure your environment is properly configured for Kubernetes, and refer to our 
 
     To update your Kubernetes deployment, follow the standard Helm or Kustomize update procedures based on your initial installation method.
 
-    ### Troubleshooting Kubernetes Deployment
-
-    Ensure your Kubernetes cluster is correctly configured and refer to our [Getting Started](./) guide for troubleshooting.
+    Refer to the [Troubleshooting Guide](../troubleshooting/index.mdx) for more information on resolving issues.
 
   </TabItem>
 
@@ -373,73 +371,9 @@ After installing, visit:
   curl http://localhost:11434/v1/models
   ```
 
-Explore more in our [Next Steps](./next-steps.mdx) guide.
+## Next Steps
 
-## Troubleshooting Tips
-
-### 1. Verify Ollama Installation
-
-To ensure Ollama is accessible, run:
-
-```bash
-curl http://localhost:11434/v1/models
-```
-
-If this command returns a list of models, your Ollama instance is working correctly.
-
-### 2. Port Conflicts
-
-- Ensure the **Ollama API** is not blocked by firewalls or conflicting with other services on **port 11434** or **11435**.
-- If you are using Docker Compose, confirm the correct mapping with:
-
-  ```yaml
-  ports:
-    - "11435:11434"
-  ```
-
-### 3. GPU Issues on AMD Systems
-
-Some AMD GPUs require:
-
-```bash
-HSA_OVERRIDE_GFX_VERSION=10.3.0
-```
-
-Apply this environment variable before launching Docker.
-
-### 4. Switching User Modes
-
-**FAQ 1** covers switching from single-user to multi-user mode.
-
-For more in-depth troubleshooting, please refer to our [Troubleshooting Guide](../troubleshooting/).
-
-## Frequently Asked Questions (FAQ)
-
-### 1. How do I switch from single-user to multi-user mode?
-
-You must reconfigure the `WEBUI_AUTH` environment variable and restart the container. **Be cautious**—you cannot switch modes without restarting the application.
-
-### 2. Why can't I access Ollama from another container?
-
-Ensure the following settings:
-
-```bash
---add-host=host.docker.internal:host-gateway
-```
-
-This allows the containers to communicate with the host machine.
-
-### 3. Additional FAQs
-
-*(Add more frequently asked questions as they arise.)*
-
-## Using the WebUI for the First Time
-
-Once installed, access Open WebUI at:
-
-[http://localhost:3000](http://localhost:3000)
-
-To learn how to use Open WebUI, such as loading models, please refer to our [Next Steps Guide on Ollama Models](./next-steps/ollama-models.mdx).
+- **[Ollama Models](./next-steps/ollama-models.mdx)**: Load a model into Ollama.
 
 ## Join the Community
 
@@ -452,6 +386,6 @@ Stay updated with the latest features, troubleshooting tips, and announcements!
 
 ## Conclusion
 
-Thank you for choosing Open WebUI! We are committed to providing a powerful, privacy-focused interface for your LLM needs. If you encounter any issues, refer to the [Troubleshooting Guide](../troubleshooting/).
+Thank you for choosing Open WebUI! We are committed to providing a powerful, privacy-focused interface for your LLM needs. If you encounter any issues, refer to the [Troubleshooting Guide](../troubleshooting/index.mdx).
 
 Happy exploring! 🎉
