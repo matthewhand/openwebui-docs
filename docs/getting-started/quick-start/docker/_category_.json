@@ -1,0 +1,4 @@
+{
+    "items": [],              // Empty to prevent any children from showing in the sidebar
+    "collapsed": true
+}
