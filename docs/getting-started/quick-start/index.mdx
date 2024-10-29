@@ -7,7 +7,6 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import { TopBanners } from "@site/src/components/TopBanners";
 
-import DockerInstall from './tab-docker/DockerInstall.md';
 import DockerCompose from './tab-docker/DockerCompose.md';
 import Podman from './tab-docker/Podman.md';
 import ManualDocker from './tab-docker/ManualDocker.md';
@@ -42,14 +41,9 @@ Choose your preferred installation method below:
 
     <Tabs>
       <TabItem value="docker-compose" label="Docker Compose">
-        <DockerInstall />
         <DockerCompose />
         <DataStorage />  
         <DockerUpdating />
-      </TabItem>
-
-      <TabItem value="swarm" label="Docker Swarm">
-        *(Content coming soon)*
       </TabItem>
 
       <TabItem value="podman" label="Podman">
@@ -57,10 +51,13 @@ Choose your preferred installation method below:
       </TabItem>
 
       <TabItem value="manual-docker" label="Manual Docker">
-        <DockerInstall />
         <ManualDocker />
         <DataStorage />  
         <DockerUpdating />
+      </TabItem>
+
+      <TabItem value="swarm" label="Docker Swarm">
+        *(Content coming soon)*
       </TabItem>
 
     </Tabs>
