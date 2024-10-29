@@ -188,7 +188,7 @@ The configuration files, which define the available voices and their properties,
 **Additional Resources**
 ------------------------
 
-For more information on configuring Open WebUI to use `openedai-speech`, including setting environment variables, see the [Open WebUI documentation](../../getting-started/advanced-topics/EnvConfig).
+For more information on configuring Open WebUI to use `openedai-speech`, including setting environment variables, see the [Open WebUI documentation](../../getting-started/advanced-topics/EnvConfig.md).
 
 For more information about `openedai-speech`, please visit the [GitHub repository](https://github.com/matatonic/openedai-speech).
 
