@@ -1,6 +1,3 @@
----
-title: "Helm Setup"
----
 
 # Helm Setup for Kubernetes
 

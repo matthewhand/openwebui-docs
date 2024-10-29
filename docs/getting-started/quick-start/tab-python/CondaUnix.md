@@ -1,6 +1,4 @@
----
-title: "Using Conda for Python"
----
+
 
 # Install with Conda
 

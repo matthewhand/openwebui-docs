@@ -1,6 +1,3 @@
----
-title: "Using Virtual Environments"
----
 
 # Using Virtual Environments
 

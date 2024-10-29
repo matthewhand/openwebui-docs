@@ -1,6 +1,4 @@
----
-title: "Kustomize Setup"
----
+
 
 # Kustomize Setup for Kubernetes
 
