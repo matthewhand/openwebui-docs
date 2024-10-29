@@ -1,5 +1,5 @@
 ---
-title: "Tutorial: Configuring RAG with OpenWebUI Documentation"
+title: "Open WebUI RAG"
 ---
 
 # Tutorial: Configuring RAG with OpenWebUI Documentation
