@@ -1,6 +1,6 @@
 ---
 sidebar_position: 6
-title: "HTTPS Encryption"
+title: "🔒HTTPS Encryption"
 ---
 
 ## Overview
