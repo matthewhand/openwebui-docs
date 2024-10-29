@@ -224,44 +224,88 @@ Ensure your environment is properly configured for Kubernetes, and refer to our 
   </TabItem>
 
   <TabItem value="python" label="Python">
+    <Tabs>
+      <TabItem value="venv" label="Venv">
 
-### Install with Python Pip
+### Install with Python and Virtual Environment (venv)
 
-```bash
-pip install open-webui
-```
+1. **Create a Virtual Environment:**
 
-Then, start the server:
+   ```bash
+   python -m venv venv
+   ```
 
-```bash
-open-webui serve
-```
+2. **Activate the Virtual Environment:**
+
+   - On Linux/macOS:
+
+     ```bash
+     source venv/bin/activate
+     ```
+
+   - On Windows:
+
+     ```bash
+     venv\Scripts\activate
+     ```
+
+3. **Install Open WebUI:**
+
+   ```bash
+   pip install open-webui
+   ```
+
+4. **Start the Server:**
+
+   ```bash
+   open-webui serve
+   ```
 
 After installation, access Open WebUI at:
 
 [http://localhost:8080](http://localhost:8080)
 
-### Updating Python Installation
+      </TabItem>
 
-To update Open WebUI installed via `pip`:
+      <TabItem value="conda" label="Conda">
 
-```bash
-pip install --upgrade open-webui
-```
+### Install with Conda
 
-### Troubleshooting Python Installation
+1. **Create a Conda Environment:**
 
-Ensure that all dependencies are correctly installed. Refer to the [Troubleshooting Tips](#troubleshooting-tips) section for common issues.
+   ```bash
+   conda create -n open-webui python=3.9
+   ```
 
-  </TabItem>
+2. **Activate the Environment:**
 
-  <TabItem value="third-party" label="Third Party">
-    <Tabs>
-      <TabItem value="manual-setup" label="Manual Setup">
+   ```bash
+   conda activate open-webui
+   ```
 
-### Manual Setup from GitHub Repo
+3. **Install Open WebUI:**
 
-If you want to build Open WebUI from source, follow these instructions.
+   ```bash
+   pip install open-webui
+   ```
+
+4. **Start the Server:**
+
+   ```bash
+   open-webui serve
+   ```
+
+After installation, access Open WebUI at:
+
+[http://localhost:8080](http://localhost:8080)
+
+      </TabItem>
+
+      <TabItem value="isolated" label="Isolated">
+
+### Isolated Installation (Manual Setup from GitHub Repo)
+
+If you want to build Open WebUI from source in an isolated environment, follow these instructions.
 
 ```bash
 git clone https://github.com/open-webui/open-webui.git
@@ -292,7 +336,7 @@ This builds and launches the frontend and backend servers.
 
       </TabItem>
 
-      <TabItem value="development-setup" label="Development Setup">
+      <TabItem value="development" label="Development">
 
 ### Development Setup
 
@@ -317,7 +361,24 @@ start.bat
 Refer to the full [Development Guide](./development) for detailed steps.
 
       </TabItem>
+    </Tabs>
 
+    ### Updating Python Installation
+
+    To update Open WebUI installed via `pip`:
+
+    ```bash
+    pip install --upgrade open-webui
+    ```
+
+    ### Troubleshooting Python Installation
+
+    Ensure that all dependencies are correctly installed. Refer to the [Troubleshooting Tips](#troubleshooting-tips) section for common issues.
+
+  </TabItem>
+
+  <TabItem value="third-party" label="Third Party">
+    <Tabs>
       <TabItem value="pinokio-computer" label="Pinokio.computer">
 
 ### Pinokio.computer Installation
