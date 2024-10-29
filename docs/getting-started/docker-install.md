@@ -1,4 +1,9 @@
-# Installing Docker for Open WebUI
+---
+sidebar_position: 2
+title: "🐋 Installing Docker"
+---
+
+# Installing Docker
 
 ## For Windows and Mac Users
 
