@@ -27,7 +27,3 @@ title: "Using Conda for Python"
    ```bash
    open-webui serve
    ```
-
-After installation, access Open WebUI at:
-
-[http://localhost:8080](http://localhost:8080)
