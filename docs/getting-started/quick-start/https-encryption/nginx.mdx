@@ -1,25 +1,3 @@
----
-title: "HTTPS Encryption"
----
-
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
-
-# Enabling HTTPS Encryption for Open WebUI
-
-**Note:** HTTPS encryption is **not required** to operate Open WebUI in most cases. However, certain features—such as **Voice Calls**—will be blocked by modern web browsers unless HTTPS is enabled. If you do not plan to use these features, you can skip this section.
-
-This guide provides instructions for setting up **HTTPS encryption** using a reverse proxy. While **Nginx** is used as an example, other proxies such as **Traefik** or **Caddy** can also be configured similarly. This setup assumes a **Docker Compose deployment** for compatibility.
-
-## Prerequisites
-
-- Docker and Docker Compose are installed.
-- Open WebUI is already deployed and running.
-- Basic understanding of reverse proxy configuration.
-
-<Tabs groupId="https-setup">
-
-<TabItem value="nginx" label="Nginx Setup">
 
 ### Overview
 
@@ -196,9 +174,3 @@ docker compose up -d
 ```
 
 ---
-
-## Conclusion
-
-This guide demonstrates how to enable **HTTPS encryption** for Open WebUI using Nginx as an example. This setup ensures secure communication and unlocks features like **Voice Calls**, which require HTTPS to function in modern browsers.
-
-If you encounter issues or have questions, feel free to join our [community](https://discord.gg/5rJgQTnV4s) or raise an issue on [GitHub](https://github.com/open-webui/open-webui).

@@ -1,0 +1,85 @@
+### Podman Installation (Rootless)
+
+You can also deploy Open WebUI using **Podman**.
+
+```bash
+podman run -d -p 3000:8080 -v open-webui:/app/backend/data ghcr.io/open-webui/open-webui:main
+```
+
+If networking issues arise, use:
+
+```bash
+--network=slirp4netns:allow_host_loopback=true
+```
+
+Refer to the Podman [documentation](https://github.com/containers/podman) for advanced configurations.
+
+      </TabItem>
+
+      <TabItem value="manual-docker" label="Manual">
+
+### Manual Docker Installation
+
+If Ollama is already installed, start Open WebUI using:
+
+```bash
+docker run -d -p 3000:8080 -v open-webui:/app/backend/data --name open-webui ghcr.io/open-webui/open-webui:main
+```
+
+For **Nvidia GPU support**:
+
+```bash
+docker run -d -p 3000:8080 --gpus all -v ollama:/root/.ollama -v open-webui:/app/backend/data ghcr.io/open-webui/open-webui:cuda
+```
+
+If you want to connect **Ollama on another server**:
+
+```bash
+docker run -d -p 3000:8080 -e OLLAMA_BASE_URL=http://<server-ip>:11434 ghcr.io/open-webui/open-webui:main
+```
+
+      </TabItem>
+    </Tabs>
+
+    ### Updating Your Docker Installation
+
+    For Docker users, updating Open WebUI can be done manually or via **Watchtower**.
+
+    #### Manual Update
+
+    Stop the container:
+
+    ```bash
+    docker stop open-webui
+    ```
+
+    Remove the old container:
+
+    ```bash
+    docker rm open-webui
+    ```
+
+    Pull the latest version:
+
+    ```bash
+    docker pull ghcr.io/open-webui/open-webui:main
+    ```
+
+    Restart the container:
+
+    ```bash
+    docker run -d -p 3000:8080 -v open-webui:/app/backend/data --name open-webui --restart always ghcr.io/open-webui/open-webui:main
+    ```
+
+    #### Automated Updates with Watchtower
+
+    Use **Watchtower** to keep your containers up-to-date automatically.
+
+    1. Start Watchtower:
+
+       ```bash
+       docker run --rm --volume /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower --run-once open-webui
+       ```
+
+    2. Replace `open-webui` with your container name if different.
+
