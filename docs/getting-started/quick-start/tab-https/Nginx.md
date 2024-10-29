@@ -2,8 +2,6 @@
 title: "Nginx Setup for HTTPS"
 ---
 
-# Enabling HTTPS Encryption with Nginx
-
 Use Nginx as a reverse proxy to enable HTTPS for your Open WebUI instance.
 
 ## Prerequisites
