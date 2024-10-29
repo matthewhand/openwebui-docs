@@ -3,7 +3,6 @@ sidebar_position: 4
 title: "🌍 Environment Variable Configuration"
 ---
 
-
 ## Overview
 
 Open WebUI provides a range of environment variables that allow you to customize and configure 
@@ -107,7 +106,7 @@ allowing the client to wait indefinitely.
 - Description: Toggles email, password, sign in and "or" (only when `ENABLE_OAUTH_SIGNUP` is set to True) elements.
 
 :::danger
-This should **only** ever be set to `False` when [ENABLE_OAUTH_SIGNUP](EnvConfig#enable_oauth_signup) 
+This should **only** ever be set to `False` when [ENABLE_OAUTH_SIGNUP](EnvConfig) 
 is also being used and set to `True`. Failure to do so will result in the inability to login.
 :::
 

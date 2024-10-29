@@ -35,7 +35,7 @@ Follow these steps to set up RAG with **OpenWebUI Documentation**:
    - Extract the `main.zip` file to get all documentation files.
 
 3. **Locate the Markdown Files**:
-   - In the extracted folder, locate all files with `.md` extensions.
+   - In the extracted folder, locate all files with `.md` and `.mdx`extensions (tip: search for `*.md*`).
 
 4. **Create a Knowledge Base**:
    - Navigate to **Workspace** > **Knowledge** > **+ Create a Knowledge Base**.
@@ -45,7 +45,7 @@ Follow these steps to set up RAG with **OpenWebUI Documentation**:
    > Click **Create Knowledge**.
 
 5. **Upload the Files**:
-   - Drag and drop the `.md` files from the extracted folder into the **OpenWebUI Documentation** knowledge base.
+   - Drag and drop the `.md` and `.mdx` files from the extracted folder into the **OpenWebUI Documentation** knowledge base.
 
 ---
 
