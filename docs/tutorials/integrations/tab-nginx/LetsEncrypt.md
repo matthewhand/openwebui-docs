@@ -1,7 +1,4 @@
 
-
-<!-- File: tab-nginx/LetsEncrypt.md -->
-
 ### Let's Encrypt
 
 Let's Encrypt provides free SSL certificates trusted by most browsers, ideal for production environments.
@@ -16,12 +13,12 @@ Let's Encrypt provides free SSL certificates trusted by most browsers, ideal for
 1. **Create Directories for Nginx Files:**
 
     ```bash
-    mkdir -p tab-nginx/letsencrypt/conf.d tab-nginx/letsencrypt/ssl
+    mkdir -p conf.d ssl
     ```
 
 2. **Create Nginx Configuration File:**
 
-    **`tab-nginx/letsencrypt/conf.d/open-webui.conf`:**
+    **`conf.d/open-webui.conf`:**
 
     ```nginx
     server {
@@ -40,7 +37,7 @@ Let's Encrypt provides free SSL certificates trusted by most browsers, ideal for
 
 3. **Simplified Let's Encrypt Script:**
 
-    **`tab-nginx/letsencrypt/enable_letsencrypt.sh`:**
+    **`enable_letsencrypt.sh`:**
 
     ```bash
     #!/bin/bash
@@ -69,7 +66,7 @@ Let's Encrypt provides free SSL certificates trusted by most browsers, ideal for
     **Make the script executable:**
 
     ```bash
-    chmod +x tab-nginx/letsencrypt/enable_letsencrypt.sh
+    chmod +x enable_letsencrypt.sh
     ```
 
 4. **Update Docker Compose Configuration:**
@@ -84,8 +81,8 @@ Let's Encrypt provides free SSL certificates trusted by most browsers, ideal for
           - "80:80"
           - "443:443"
         volumes:
-          - ./tab-nginx/letsencrypt/conf.d:/etc/nginx/conf.d
-          - ./tab-nginx/letsencrypt/ssl:/etc/nginx/ssl
+          - ./conf.d:/etc/nginx/conf.d
+          - ./ssl:/etc/nginx/ssl
         depends_on:
           - open-webui
     ```
@@ -101,7 +98,7 @@ Let's Encrypt provides free SSL certificates trusted by most browsers, ideal for
     Execute the script to obtain and install the SSL certificate:
 
     ```bash
-    ./tab-nginx/letsencrypt/enable_letsencrypt.sh
+    ./enable_letsencrypt.sh
     ```
 
 #### Access the WebUI

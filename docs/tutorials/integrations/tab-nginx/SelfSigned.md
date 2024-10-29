@@ -10,12 +10,12 @@ Using self-signed certificates is suitable for development or internal use where
 1. **Create Directories for Nginx Files:**
 
     ```bash
-    mkdir -p tab-nginx/self-signed/conf.d tab-nginx/self-signed/ssl
+    mkdir -p conf.d ssl
     ```
 
 2. **Create Nginx Configuration File:**
 
-    **`tab-nginx/self-signed/conf.d/open-webui.conf`:**
+    **`conf.d/open-webui.conf`:**
 
     ```nginx
     server {
@@ -40,8 +40,8 @@ Using self-signed certificates is suitable for development or internal use where
 
     ```bash
     openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-    -keyout tab-nginx/self-signed/ssl/nginx.key \
-    -out tab-nginx/self-signed/ssl/nginx.crt \
+    -keyout ssl/nginx.key \
+    -out ssl/nginx.crt \
     -subj "/CN=your_domain_or_IP"
     ```
 
@@ -56,8 +56,8 @@ Using self-signed certificates is suitable for development or internal use where
         ports:
           - "443:443"
         volumes:
-          - ./tab-nginx/self-signed/conf.d:/etc/nginx/conf.d
-          - ./tab-nginx/self-signed/ssl:/etc/nginx/ssl
+          - ./conf.d:/etc/nginx/conf.d
+          - ./ssl:/etc/nginx/ssl
         depends_on:
           - open-webui
     ```
