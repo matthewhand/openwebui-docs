@@ -1,77 +1,65 @@
+---
+sidebar_position: 2
+title: "🚀 Quick Start"
+---
 
-Use Nginx as a reverse proxy to enable HTTPS for your Open WebUI instance.
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { TopBanners } from "@site/src/components/TopBanners";
 
-## Prerequisites
+import SelfSigned from './tab-nginx/SelfSigned.md';
+import LetsEncrypt from './tab-nginx/LetsEncrypt.md';
 
-- Docker and Docker Compose are installed.
-- Open WebUI is already deployed and running.
-- Basic understanding of reverse proxy configuration.
+<TopBanners />
 
-## Steps
+## How to Install 🚀
 
-1. **Create Directories for Nginx Files:**
+:::info **Important Note on User Roles and Privacy:**
 
-   ```bash
-   mkdir -p nginx/conf.d nginx/ssl
-   ```
+- **Admin Creation:** The first account created on Open WebUI gains **Administrator privileges**, controlling user management and system settings.
+- **User Registrations:** Subsequent sign-ups start with **Pending** status, requiring Administrator approval for access.
+- **Privacy and Data Security:** **All your data**, including login details, is **locally stored** on your device. Open WebUI ensures **strict confidentiality** and **no external requests** for enhanced privacy and security.
 
-2. **Create Nginx Configuration Files:**
+:::
 
-   **`nginx/conf.d/open-webui.conf`:**
+Choose your preferred installation method below:
 
-   ```nginx
-   server {
-       listen 443 ssl;
-       server_name your_domain_or_IP;
+- **Docker:** Recommended for most users due to ease of setup and flexibility.
+- **Kubernetes:** Ideal for enterprise deployments that require scaling and orchestration.
+- **Python:** Suitable for low-resource environments or those wanting a manual setup.
 
-       ssl_certificate /etc/nginx/ssl/nginx.crt;
-       ssl_certificate_key /etc/nginx/ssl/nginx.key;
-       ssl_protocols TLSv1.2 TLSv1.3;
+<Tabs>
+  <TabItem value="self-signed" label="Self-Signed Certificate">
+    <SelfSigned />
+  </TabItem>
 
-       location / {
-           proxy_pass http://host.docker.internal:3000;
-           proxy_set_header Host $host;
-           proxy_set_header X-Real-IP $remote_addr;
-           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-           proxy_set_header X-Forwarded-Proto $scheme;
-       }
-   }
-   ```
+  <TabItem value="letsencrypt" label="Let's Encrypt">
+    <LetsEncrypt />
+  </TabItem>
+</Tabs>
 
-3. **Generate SSL Certificates:**
+## Next Steps
 
-   ```bash
-   openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-   -keyout nginx/ssl/nginx.key \
-   -out nginx/ssl/nginx.crt \
-   -subj "/CN=your_domain_or_IP"
-   ```
+After installing, visit:
 
-4. **Update Docker Compose Configuration:**
+- [http://localhost:3000](http://localhost:3000) to access OpenWebUI.
+- or [http://localhost:8080/](http://localhost:8080/) when using a Python deployment.
 
-   Add the Nginx service to your `docker-compose.yml`:
+You are now ready to start **[Using OpenWebUI](../using-openwebui/index.mdx)**!
 
-   ```yaml
-   services:
-     nginx:
-       image: nginx:alpine
-       ports:
-         - "443:443"
-       volumes:
-         - ./nginx/conf.d:/etc/nginx/conf.d
-         - ./nginx/ssl:/etc/nginx/ssl
-       depends_on:
-         - open-webui
-   ```
+## Join the Community
 
-5. **Start Nginx Service:**
+Need help? Have questions? Join our community:
 
-   ```bash
-   docker compose up -d nginx
-   ```
+- [Open WebUI Discord](https://discord.gg/5rJgQTnV4s)
+- [GitHub Issues](https://github.com/open-webui/open-webui/issues)
 
-## Access the WebUI
+Stay updated with the latest features, troubleshooting tips, and announcements!
 
-Access Open WebUI via HTTPS at:
+## Conclusion
 
-[https://your_domain_or_IP](https://your_domain_or_IP)
+Thank you for choosing Open WebUI! We are committed to providing a powerful, privacy-focused interface for your LLM needs. If you encounter any issues, refer to the [Troubleshooting Guide](../../troubleshooting/index.mdx).
+
+Happy exploring! 🎉
+
+---
