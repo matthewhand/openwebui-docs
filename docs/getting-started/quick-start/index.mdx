@@ -7,22 +7,18 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import { TopBanners } from "@site/src/components/TopBanners";
 
-// Docker Section Imports
-import DockerCompose from './docker/docker-compose.mdx';
-import Podman from './docker/podman.mdx';
-import ManualDocker from './docker/manual-docker.mdx';
-import DataStorage from './docker/data-storage.mdx';
-import Updating from './docker/updating.mdx';
-
-// Kubernetes Section Imports
-import Helm from './kubernetes/helm.mdx';
-import Kustomize from './kubernetes/kustomize.mdx';
-
-// Python Section Imports
-import Venv from './python/venv.mdx';
-import Conda from './python/conda.mdx';
-
-import HttpsNginx from './https-encryption/nginx.mdx';
+import DockerInstall from './docker/DockerInstall.md';
+import DockerCompose from './docker/DockerCompose.md';
+import Podman from './docker/Podman.md';
+import ManualDocker from './docker/ManualDocker.md';
+import DataStorage from './docker/DataStorage.md';
+import DockerUpdating from './docker/DockerUpdating.md';
+import Helm from './kubernetes/Helm.md';
+import Kustomize from './kubernetes/Kustomize.md';
+import Venv from './python/Venv.md';
+import CondaUnix from './python/CondaUnix.md';
+import CondaWindows from './python/CondaWindows.md';
+import HttpsNginx from './https-encryption/Nginx.md';
 
 <TopBanners />
 
@@ -44,49 +40,76 @@ Choose your preferred installation method below:
 
 <Tabs>
   <TabItem value="docker" label="Docker">
+
+    <DockerInstall />
+
     <Tabs>
       <TabItem value="docker-compose" label="Docker Compose">
         <DockerCompose />
       </TabItem>
+
       <TabItem value="swarm" label="Docker Swarm">
         *(Content coming soon)*
       </TabItem>
+
       <TabItem value="podman" label="Podman">
         <Podman />
       </TabItem>
+
       <TabItem value="manual-docker" label="Manual Docker">
         <ManualDocker />
       </TabItem>
+
     </Tabs>
-   <DataStorage />
-   <Updating />
+
+    <DataStorage />
+
+    <DockerUpdating />
+
   </TabItem>
 
   <TabItem value="kubernetes" label="Kubernetes">
+
     <Tabs>
+
       <TabItem value="helm" label="Helm">
         <Helm />
       </TabItem>
+
       <TabItem value="kustomize" label="Kustomize">
         <Kustomize />
       </TabItem>
+
     </Tabs>
+
   </TabItem>
 
   <TabItem value="python" label="Python">
+
     <Tabs>
+
       <TabItem value="venv" label="Venv">
         <Venv />
       </TabItem>
+
       <TabItem value="conda" label="Conda">
-        <Conda />
+        <h3>Choose Your Platform</h3>
+        <Tabs groupId="platform-conda">
+          <TabItem value="unix-conda" label="Linux/macOS">
+            <CondaUnix />
+          </TabItem>
+
+          <TabItem value="windows-conda" label="Windows">
+            <CondaWindows />
+          </TabItem>
+        </Tabs>
       </TabItem>
+
       <TabItem value="development" label="Development">
-
-### Development Setup
-
-For developers who want to contribute, check the Development Guide in [Advanced Topics](../advanced-topics).
-
+        <h3>Development Setup</h3>
+        <p>
+          For developers who want to contribute, check the Development Guide in <a href="../advanced-topics">Advanced Topics</a>.
+        </p>
       </TabItem>
     </Tabs>
   </TabItem>
@@ -94,22 +117,19 @@ For developers who want to contribute, check the Development Guide in [Advanced 
   <TabItem value="third-party" label="Third Party">
     <Tabs>
       <TabItem value="pinokio-computer" label="Pinokio.computer">
+        ### Pinokio.computer Installation
 
-### Pinokio.computer Installation
+        For installation via Pinokio.computer, please visit their website:
 
-For installation via Pinokio.computer, please visit their website:
+        [https://pinokio.computer/](https://pinokio.computer/)
 
-[https://pinokio.computer/](https://pinokio.computer/)
-
-Support for this installation method is provided through their website.
-
+        Support for this installation method is provided through their website.
       </TabItem>
     </Tabs>
 
     ### Additional Third-Party Integrations
 
     *(Add information about third-party integrations as they become available.)*
-
   </TabItem>
 </Tabs>
 
@@ -117,8 +137,10 @@ Support for this installation method is provided through their website.
 
 After installing, visit:
 
-- [http://localhost:3000](http://localhost:3000) to start using OpenWebUI!
-- **[Using OpenWebUI](../using-openwebui/index.mdx)**: Using OpenWebUI.
+- [http://localhost:3000](http://localhost:3000) to access OpenWebUI.
+- ... or [http://localhost:8080/](http://localhost:8080/) when using a Python deployment.
+
+You are now ready to start **[Using OpenWebUI](../using-openwebui/index.mdx)**!
 
 ## Enabling Encryption
 
@@ -135,12 +157,15 @@ This guide provides instructions for setting up **HTTPS encryption** using a rev
 - Basic understanding of reverse proxy configuration.
 
 <Tabs>
-  <TabItem value="encryption" label="Nginx">
+
+  <TabItem value="HttpsNginx" label="Nginx">
     <HttpsNginx />
   </TabItem>
-  <TabItem value="encryption" label="Cloudflare">
+
+  <TabItem value="HttpsCloudflare" label="Cloudflare">
     *(Content coming soon)*
   </TabItem>
+
 </Tabs>
 
 This guide demonstrates how to enable **HTTPS encryption** for Open WebUI using Nginx as an example. This setup ensures secure communication and unlocks features like **Voice Calls**, which require HTTPS to function in modern browsers.
@@ -156,6 +181,6 @@ Stay updated with the latest features, troubleshooting tips, and announcements!
 
 ## Conclusion
 
-Thank you for choosing Open WebUI! We are committed to providing a powerful, privacy-focused interface for your LLM needs. If you encounter any issues, refer to the [Troubleshooting Guide](../troubleshooting/index.mdx).
+Thank you for choosing Open WebUI! We are committed to providing a powerful, privacy-focused interface for your LLM needs. If you encounter any issues, refer to the [Troubleshooting Guide](../../troubleshooting/index.mdx).
 
 Happy exploring! 🎉
