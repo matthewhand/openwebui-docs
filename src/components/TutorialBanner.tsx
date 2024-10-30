@@ -1,5 +1,4 @@
 import React from 'react';
-import Link from '@docusaurus/Link';
 
 export const TutorialBanner = () => {
   return (

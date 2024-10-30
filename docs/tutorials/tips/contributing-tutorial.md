@@ -3,9 +3,9 @@ sidebar_position: 3
 title: "Contributing Tutorials"
 ---
 
-import { TutorialBanner } from "@site/src/components/TutorialBanner";
+import { banner } from "../banner.mdx";
 
-<TutorialBanner />
+<banner/>
 
 # Contributing Tutorials
 
