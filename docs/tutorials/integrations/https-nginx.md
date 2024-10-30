@@ -10,11 +10,9 @@ Choose the method that best fits your deployment needs.
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
+
 import SelfSigned from './tab-nginx/SelfSigned.md';
 import LetsEncrypt from './tab-nginx/LetsEncrypt.md';
-
-import { TutorialBanner } from "@site/src/components/TutorialBanner";
-<TutorialBanner />
 
 <Tabs>
   <TabItem value="self-signed" label="Self-Signed Certificate">
