@@ -3,9 +3,9 @@ sidebar_position: 3
 title: "Contributing Tutorials"
 ---
 
-import { banner } from "../banner.mdx";
+import Banner from '../banner.mdx';
 
-<banner/>
+<Banner />
 
 # Contributing Tutorials
 
@@ -49,7 +49,7 @@ We appreciate your interest in contributing tutorials to the Open WebUI document
 
    - In your forked repository, navigate to the appropriate directory (e.g., `docs/tutorial/`).
    - Create a new markdown file for your tutorial or edit existing ones.
-   - **Ensure that your tutorial includes the `<TutorialBanner />` tag** at the appropriate location to display the important notice.
+   - Ensure that your tutorial includes the `<TutorialBanner />` tag at the appropriate location to display the important notice.
 
 8. **Submit a Pull Request**
 
