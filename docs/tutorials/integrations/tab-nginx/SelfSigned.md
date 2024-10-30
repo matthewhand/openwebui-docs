@@ -1,6 +1,3 @@
-
-<!-- File: tab-nginx/SelfSigned.md -->
-
 ### Self-Signed Certificate
 
 Using self-signed certificates is suitable for development or internal use where trust is not a critical concern.
