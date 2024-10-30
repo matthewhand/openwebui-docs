@@ -1,11 +1,11 @@
 ---
-sidebar_position: 3
+sidebar_position: 2
 title: "Contributing Tutorials"
 ---
 
-import Banner from '../banner.mdx';
-
-<Banner />
+:::warning
+This tutorial is a community contribution and is not supported by the OpenWebUI team. It serves only as a demonstration on how to customize OpenWebUI for your specific use case. Want to contribute? Check out the contributing tutorial.
+:::
 
 # Contributing Tutorials
 
@@ -33,7 +33,7 @@ We appreciate your interest in contributing tutorials to the Open WebUI document
 4. **Enable GitHub Pages**
 
    - Go to **Settings** > **Pages** in your forked repository.
-   - Under **Source**, select the branch you want to deploy (e.g., `main` or `gh-pages`) and the folder (e.g., `/root` or `/docs`).
+   - Under **Source**, select the branch you want to deploy (e.g., `main`) and the folder (e.g.,`/docs`).
    - Click **Save** to enable GitHub Pages.
 
 5. **Run the `gh-pages` GitHub Workflow**
@@ -43,13 +43,13 @@ We appreciate your interest in contributing tutorials to the Open WebUI document
 
 6. **Browse to Your Forked Copy**
 
-   - Visit `https://<your-github-username>.github.io/` to view your forked documentation.
+   - Visit `https://<your-github-username>.github.io/docs` to view your forked documentation.
 
 7. **Draft Your Changes**
 
    - In your forked repository, navigate to the appropriate directory (e.g., `docs/tutorial/`).
    - Create a new markdown file for your tutorial or edit existing ones.
-   - Ensure that your tutorial includes the `<TutorialBanner />` tag at the appropriate location to display the important notice.
+   - Ensure that your tutorial includes the unsupported warning banner.
 
 8. **Submit a Pull Request**
 
@@ -61,7 +61,12 @@ We appreciate your interest in contributing tutorials to the Open WebUI document
 
 ## Important
 
-Community-contributed tutorials must include the `<TutorialBanner />` tag to display the important notice.
+Community-contributed tutorials must include the the following:
+```
+:::warning
+This tutorial is a community contribution and is not supported by the OpenWebUI team. It serves only as a demonstration on how to customize OpenWebUI for your specific use case. Want to contribute? Check out the contributing tutorial.
+:::
+```
 
 ---
 
