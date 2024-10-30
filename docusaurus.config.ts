@@ -175,3 +175,4 @@ const config: Config = {
 };
 
 export default config;
+// Fix: Correct exclude rule placement
