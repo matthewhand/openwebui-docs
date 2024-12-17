@@ -291,6 +291,10 @@ More information about this setting can be found [here](https://docs.sqlalchemy.
 - Default: `8080`
 - Description: Sets the port to run Open WebUI from.
 
+:::info
+If installed via Python, you must instead pass `--port` as a command line argument.
+:::
+
 #### `RESET_CONFIG_ON_START`
 
 - Type: `bool`
@@ -344,6 +348,12 @@ requests initiated by third-party websites, but only over HTTPS.
 - Type: `bool`
 - Default: `False`
 - Description: Sets the `Secure` attribute for session cookies if set to `True`.
+
+#### `CONTENT_SECURITY_POLICY`
+
+- Type: `str`
+- Description: Sets the `content-security-policy` HTTP header
+- Example: `default-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self' https://* data:; child-src 'none'; font-src 'self' data:; worker-src 'self';`
 
 #### `AIOHTTP_CLIENT_TIMEOUT`
 
