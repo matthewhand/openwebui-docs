@@ -1,48 +1,392 @@
 ---
 sidebar_position: 0
-title: "🚧 Server Connection Error"
+title: "Connection Errors"
 ---
 
-We're here to help you get everything set up and running smoothly. Below, you'll find step-by-step instructions tailored for different scenarios to solve common connection issues with Ollama and external servers like Hugging Face.
+This page covers common connection issues, their causes, and how to resolve them.
 
-## 🌟 Connection to Ollama Server
+## HTTPS, TLS, CORS & WebSocket Issues
 
-### 🚀 Accessing Ollama from Open WebUI
+If you're experiencing connectivity problems with Open WebUI, especially when using reverse proxies or HTTPS, these issues often stem from improper CORS, TLS, WebSocket, or cookie configuration. Here's how to diagnose and fix them.
 
-Struggling to connect to Ollama from Open WebUI? It could be because Ollama isn’t listening on a network interface that allows external connections. Let’s sort that out:
+### Common Symptoms
 
-1. **Configure Ollama to Listen Broadly** 🎧:
-   Set `OLLAMA_HOST` to `0.0.0.0` to make Ollama listen on all network interfaces.
+You might be experiencing these issues if you see:
+- Empty responses like `"{}"` in the chat
+- Errors like `"Unexpected token 'd', "data: {"id"... is not valid JSON"`
+- Garbled markdown (visible `##`, `**`, broken formatting) during streaming, see [Streaming Response Corruption](#garbled-markdown--streaming-response-corruption)
+- WebSocket connection failures in browser console
+- WebSocket connection failures in CLI logs
+- Login problems or session issues
+- CORS errors in browser developer tools
+- Mixed content warnings when accessing over HTTPS
 
-2. **Update Environment Variables**:
-   Ensure that the `OLLAMA_HOST` is accurately set within your deployment environment.
+### Required Configuration for HTTPS & Reverse Proxies
 
-3. **Restart Ollama**🔄:
-   A restart is needed for the changes to take effect.
+**Critical Environment Variables**
 
-💡 After setting up, verify that Ollama is accessible by visiting the WebUI interface.
+When running Open WebUI behind a reverse proxy with HTTPS, you must configure these settings:
 
-For more detailed instructions on configuring Ollama, please refer to the [Ollama's Official Documentation](https://github.com/ollama/ollama/blob/main/docs/faq.md#setting-environment-variables-on-linux).
+```bash
+# Set this to your actual domain BEFORE FIRST STARTUP (required for OAuth/SSO and proper operation)
+WEBUI_URL=https://your-open-webui-domain.com
+# If you already started Open WebUI, don't worry, you can set this config from the admin panel as well!
 
-### 🐳 Docker Connection Error
+# CORS configuration - CRITICAL for WebSocket functionality
+# Include ALL ways users might access your instance
+# Make sure to include all IPs, hostnames and domains users can and could access Open WebUI and how requests are going to your Open WebUI instance
+# e.g. localhost, 127.0.0.1, 0.0.0.0, <ip of your server/computer>, public domain - all in http and https with the correct ports
+CORS_ALLOW_ORIGIN="https://yourdomain.com;http://yourdomain.com;https://yourip;http://localhost:3000"
 
-If you're seeing a connection error when trying to access Ollama, it might be because the WebUI docker container can't talk to the Ollama server running on your host. Let’s fix that:
+# Cookie security settings for HTTPS
+# Disable if you do not use HTTPS
+WEBUI_SESSION_COOKIE_SECURE=true
+WEBUI_AUTH_COOKIE_SECURE=true
 
-1. **Adjust the Network Settings** 🛠️:
-   Use the `--network=host` flag in your Docker command. This links your container directly to your host’s network.
+# For OAuth/SSO, you will probably have to use 'lax' (strict can break OAuth callbacks)
+WEBUI_SESSION_COOKIE_SAME_SITE=lax
+WEBUI_AUTH_COOKIE_SAME_SITE=lax
 
-2. **Change the Port**:
-   Remember that the internal port changes from 3000 to 8080.
+# Live connection. Set it to false only if your reverse proxy cannot pass WebSocket upgrades:
+# browsers then use HTTP long-polling, which needs sticky sessions when you run several replicas
+ENABLE_WEBSOCKET_SUPPORT=true
+
+# Only with several replicas
+WEBSOCKET_MANAGER=redis
+WEBSOCKET_REDIS_URL=redis://redis:6379/1
+```
+
+**WEBUI_URL Configuration**
+
+The `WEBUI_URL` must be set correctly BEFORE using OAuth/SSO. Since it's a persistent config variable, you can only change it by:
+- Disabling persistent config temporarily with `ENABLE_PERSISTENT_CONFIG=false`
+- Changing it in Settings > General > WebUI URL (admin section)
+- Setting it correctly before first launch
+
+**CORS Configuration Details**
+
+The `CORS_ALLOW_ORIGIN` setting is crucial for WebSocket functionality. If you see errors in the logs like `"https://yourdomain.com is not an accepted origin"` or `"http://127.0.0.1:3000 is not an accepted origin"`, you need to add that URL to your CORS configuration. Use semicolons to separate multiple origins, and include every possible way users access your instance (domain, IP, localhost).
+
+### Reverse Proxy / SSL/TLS Configuration
+
+For reverse proxy and TLS setups, check our [tutorials here](/reference/https).
+
+### WebSocket Troubleshooting
+
+If WebSockets are not working:
+
+1. **Check your reverse proxy configuration**: Ensure `Upgrade` and `Connection` headers are properly set
+2. **Verify CORS settings**: WebSocket connections respect CORS policies
+3. **Check browser console**: Look for WebSocket connection errors
+4. **Test direct connection**: Try connecting directly to Open WebUI without the proxy to isolate the issue.
+5. **Check for HTTP/2 WebSocket Issues**: Some proxies (like HAProxy 3.x) enable HTTP/2 by default. If your proxy handles client connections via HTTP/2 but the backend/application doesn't support RFC 8441 (WebSockets over H2) properly, the instance may "freeze" or stop responding. 
+   - **Fix for HAProxy**: Add `option h2-workaround-bogus-websocket-clients` to your configuration or force the backend connection to use HTTP/1.1.
+   - **Fix for Nginx**: Ensure you are using `proxy_http_version 1.1;` in your location block (which is the default in many Open WebUI examples).
+
+For multi-instance deployments, set `WEBSOCKET_MANAGER=redis` as shown above. For detailed Redis setup instructions, see [Redis WebSocket Support](/tutorials/integrations/redis). For a complete multi-instance scaling walkthrough, see [Scaling Open WebUI](/getting-started/advanced-topics/scaling). If you're seeing WebSocket 403 errors specifically in a multi-replica setup, see [Scaling & HA Troubleshooting](/troubleshooting/multi-replica#2-websocket-403-errors--connection-failures).
+
+### Testing Your Configuration
+
+To verify your setup is working:
+
+1. **Check HTTPS**: Visit your domain and ensure you see a valid certificate with no browser warnings
+2. **Test WebSockets**: Open browser developer tools, go to Network tab, filter by "WS", and verify WebSocket connections are established
+3. **Verify CORS**: Check browser console for any CORS-related errors
+4. **Test functionality**: Send a message and ensure streaming responses work properly
+
+### Quick Fixes Checklist
+
+- ✓ Set `WEBUI_URL` to your actual HTTPS domain before enabling OAuth
+- ✓ Configure `CORS_ALLOW_ORIGIN` with all possible access URLs
+- ✓ Enable `WEBUI_SESSION_COOKIE_SECURE=true` for HTTPS
+- ✓ Add WebSocket headers to your reverse proxy configuration
+- ✓ Use TLSv1.2 or TLSv1.3 in your SSL configuration
+- ✓ Set proper `X-Forwarded-Proto` headers in your reverse proxy
+- ✓ Ensure HTTP to HTTPS redirects are in place
+- ✓ Configure Let's Encrypt for automatic certificate renewal
+- ✓ Disable proxy buffering for SSE streaming (see below)
+
+## Garbled Markdown / Streaming Response Corruption
+
+If streaming responses show garbled markdown rendering (e.g., visible `##`, `**`, or broken formatting), but disabling streaming fixes the issue, this is typically caused by **nginx proxy buffering**.
+
+### Common Symptoms
+
+- Raw markdown tokens visible in responses (`##`, `**`, `###`)
+- Bold markers appearing incorrectly (`** Control:**` instead of `**Control:**`)
+- Words or sections randomly missing from responses
+- Formatting works correctly when streaming is disabled
+
+### Cause: Nginx Proxy Buffering
+
+When nginx's proxy buffering is enabled, it re-chunks the SSE (Server-Sent Events) stream arbitrarily. This breaks markdown tokens across chunk boundaries: for example, `**bold**` becomes separate chunks `**` + `bold` + `**`, causing the markdown parser to fail.
+
+### Solution: Disable Proxy Buffering
+
+Add these directives to your nginx location block for Open WebUI:
+
+```nginx
+location / {
+    proxy_pass http://your-open-webui-upstream;
+    
+    # CRITICAL: Disable buffering for SSE streaming
+    proxy_buffering off;
+    proxy_cache off;
+    
+    # WebSocket support
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+    
+    # Standard proxy headers
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+```
+
+:::tip
+Disabling proxy buffering also **significantly improves streaming speed**, as responses stream byte-by-byte directly to the client without nginx's buffering delay.
+:::
+
+### For Other Reverse Proxies
+
+- **HAProxy**: Ensure `option http-buffer-request` is not enabled for SSE endpoints
+- **Traefik**: Check compression/buffering middleware settings
+- **Caddy**: Generally handles SSE correctly by default, but check for any buffering plugins
+
+## Blank Replies When the Model Uses a Tool
+
+### Common Symptoms
+
+- The assistant message comes back **completely empty**, with no error in the UI and nothing in the logs at any log level.
+- It looks **random**: most turns are fine, and the same prompt sometimes works and sometimes does not.
+- The provider still bills you for output tokens on the empty turn.
+- The stored message has `content: ''` and `output: []` while `usage.completion_tokens` is non-zero.
+- It gets much worse once tools are enabled, and worst of all with the builtin tools, since the model calls those on its own.
+
+### Cause: the provider omits `index` on streamed tool calls
+
+The OpenAI streaming schema puts an `index` field on every tool call delta, which is what lets a client stitch the fragments of a call back together across chunks. Open WebUI keys its accumulator on that field. A provider that sends each tool call complete in a single chunk and leaves `index` out is off-schema, and the call is dropped. The turn then ends with no text and no tool run, which is the empty message you see.
+
+This is not tied to one vendor. It affects any OpenAI-compatible endpoint that streams tool calls without `index`. **Google's OpenAI compatibility layer at `https://generativelanguage.googleapis.com/v1beta/openai` is the known case**, and Gemini 3 models add a second problem on top: a proprietary `thought_signature` that Google requires to be sent back on the follow-up request, which no OpenAI-schema client will do.
+
+### Confirm it in one command
+
+Ask the endpoint directly and look at the tool call chunk. Substitute your own URL, key and model:
+
+```bash
+curl -s -N -X POST "https://your-provider.example/v1/chat/completions" -H "Authorization: Bearer $API_KEY" -H "Content-Type: application/json" -d '{"model":"your-model","stream":true,"messages":[{"role":"user","content":"What is the weather in Paris?"}],"tools":[{"type":"function","function":{"name":"get_weather","parameters":{"type":"object","properties":{"city":{"type":"string"}},"required":["city"]}}}]}'
+```
+
+In the `delta.tool_calls` entry, look for `"index"`. If it is absent, you have this problem. The `index` on the surrounding `choices` entry is a different field and does not count.
+
+### Solutions
+
+1. **Put a gateway in front.** LiteLLM, OpenRouter or any proxy that talks the provider's native API and emits schema-correct OpenAI output. This is the only option that keeps native tool calling and the builtin tools working.
+2. **Switch the model to Legacy function calling.** In the model's **Advanced Params**, set **Function Calling** to **Legacy**. Tools are then selected by a separate non-streaming request and never go through the streaming accumulator. An unset value means native. The trade-off is that the builtin tools (Memory and the rest) are unavailable in Legacy mode, since they are injected only for native function calling.
+3. **Turn tools off for that model.** If you only want plain chat, disable the **Builtin Tools** capability on the model so it never tries to call anything. Chat completions themselves are unaffected by this bug.
+4. **Use a pipe.** A [pipe function](/features/extensibility/plugin/functions/pipe) that calls the provider's own API directly bypasses the OpenAI-compatible path entirely.
+
+Open WebUI follows the OpenAI Chat Completions schema and does not add per-provider workarounds for endpoints that diverge from it, which is the same reasoning described under [Protocol-Oriented Design](/getting-started/quick-start/connect-a-provider/starting-with-openai-compatible#protocol-oriented-design).
+
+## Frontend vs. Backend Connections (localhost Confusion)
+
+Several Open WebUI features offer **two ways** to configure connections: an **admin/global** method (from the Open WebUI backend) and a [Tether](/ecosystem/tether#bring-your-own-models-and-tools) method (from the user's own computer). These work at completely different network levels, and the same URL can succeed in one and fail in the other.
+
+### The Core Rule
+
+| Request Origin | What `localhost` Means | Who Uses This |
+| :--- | :--- | :--- |
+| **Backend (server-side)** | The machine/container running Open WebUI | Global Tool Servers, Admin-Configured Terminals, Ollama connections |
+| **Tether (your computer)** | The computer running the Tether app | Connections added in Tether |
+
+### Why the Same URL Can Work and Fail
+
+When you add a URL like `https://myserver.com/api` in Tether, your computer resolves `myserver.com` and connects directly. When you add the same URL as an **admin/global** connection, the Open WebUI backend resolves that hostname, and inside a Docker container, it may resolve to `127.0.0.1`, bypassing your reverse proxy entirely.
+
+**Common symptoms:**
+- 502 Bad Gateway on admin-configured connections while Tether connections work fine
+- `Connect call failed ('127.0.0.1', ...)` in backend logs
+- Connection timeout on global tool servers
+
+**Fix:** For backend/admin connections, use the **internal URL** that the backend can actually reach:
+- Docker service names (e.g. `http://open-terminal:8000`)
+- `host.docker.internal` (to reach the host machine from inside Docker)
+- Internal IPs (e.g. `http://192.168.1.50:8000`)
+
+:::tip
+This applies to **all** backend-proxied connections in Open WebUI, including Open Terminal. The same pattern affects [Tool Server connections](/features/extensibility/plugin/tools/openapi-servers/open-webui#1-tool-servers-added-by-an-admin), [Open Terminal admin connections](/features/open-terminal#enterprise-multi-user) and Ollama/OpenAI API endpoints.
+:::
+
+## "Open WebUI backend required" / Front-end Only Error
+
+**Symptom:** the page loads but shows *"Open WebUI backend required. Oops! You're using an unsupported method (frontend only). Please serve the WebUI from the backend."* It commonly appears on a **second instance**, behind a reverse proxy, or through an **SSH tunnel**, while another instance works fine.
+
+**What it actually means:** on load, the frontend fetches `/api/config` from its own origin. If that request fails, Open WebUI shows this error. It does **not** mean you are running a frontend-only build. The official image is a single process that serves the UI and the API together on container port **`8080`**, so if the page reached you, the API is supposed to be there too. The error means the request for `/api/config` at that origin did not reach the backend.
+
+Two causes account for almost all of these:
+
+1. **A port-mapping or tunnel mismatch.** The origin you opened serves the page but does not route `/api/config` to the backend. Check that:
+   - Each container maps its host port to container port **`8080`**, for example `ports: ["3001:8080"]`. Mapping to any other internal port breaks the API while still potentially serving cached assets.
+   - Your SSH tunnel forwards the local port to the **remote host port that instance actually publishes**. Running several instances makes it easy to forward to the wrong one.
+   - Quick test from the browser machine, through the tunnel: `curl http://localhost:3001/api/config`. JSON back means the backend is reachable, so look at cause 2. An empty reply or connection refused means the tunnel or port mapping is wrong.
+
+2. **A stale service worker serving a cached page.** Open WebUI registers no service worker and unregisters any it finds on load, so a stale shell comes from the browser's HTTP cache or from a worker left by another app on the same origin while the live `/api/config` call fails, which produces this exact error. A normal hard refresh does not unregister the service worker. Clear it from **DevTools > Application > Service Workers > Unregister** for that origin, or open the instance in a fresh private/incognito window.
+
+This is a deployment and networking condition, not an Open WebUI bug.
+
+## Connection to Ollama Server
+
+### Accessing Ollama from Open WebUI
+
+If Open WebUI cannot reach Ollama, it's likely because Ollama is only listening on `127.0.0.1` (localhost). To fix this:
+
+1. **Set `OLLAMA_HOST=0.0.0.0`** to make Ollama listen on all network interfaces.
+2. **Ensure the variable is set** in your deployment environment (systemd service, Docker, shell profile).
+3. **Restart Ollama** for the change to take effect.
+
+Verify connectivity by accessing the WebUI interface after restarting. For detailed instructions, see the [Ollama documentation](https://github.com/ollama/ollama/blob/main/docs/faq.mdx#setting-environment-variables-on-linux).
+
+### Docker Connection Error
+
+If Open WebUI in Docker cannot connect to Ollama running on the host machine:
+
+Use the `--network=host` flag in your Docker command. This links your container directly to your host's network.
 
 **Example Docker Command**:
 ```bash
 docker run -d --network=host -v open-webui:/app/backend/data -e OLLAMA_BASE_URL=http://127.0.0.1:11434 --name open-webui --restart always ghcr.io/open-webui/open-webui:main
 ```
-🔗 After running the above, your WebUI should be available at `http://localhost:8080`.
+After running the above, your WebUI should be available at `http://localhost:8080`.
 
-## 🔒 SSL Connection Issue with Hugging Face
+## Intermittent Name Lookup Failures (Often Reported as "Model not found")
 
-Encountered an SSL error? It could be an issue with the Hugging Face server. Here's what to do:
+### Common Symptoms
+
+- Chats fail with **"Model not found"** for a model that is configured and worked a moment ago, then work again later.
+- The Ollama model list empties by itself, and a restart brings it back.
+- Logs show `ClientConnectorDNSError` or `Cannot connect to host ...` for a hostname that resolves fine from a shell inside the same container.
+- On some Windows hosts, every request to an external model provider fails from the first start.
+
+### Cause
+
+Open WebUI asks the operating system to turn hostnames into addresses, unless the optional c-ares resolver is on. c-ares does not behave the same everywhere:
+
+- On some Windows hosts it finds no usable nameserver, so no external name resolves at all.
+- In Docker it can intermittently stop resolving container names even though Docker's own DNS is still answering. The result is a wiped model list and in-flight chats failing with a misleading "Model not found", because a name that will not resolve is indistinguishable from a provider that has no such model.
+
+### Solution
+
+Leave c-ares off. By default name lookups go through the operating system, so container names, `host.docker.internal`, Compose `extra_hosts` and Kubernetes `hostAliases` all behave the way the rest of the host does.
+
+c-ares is available as an option, and on a busy instance it is worth trying, since it removes a queueing delay in front of every outbound request:
+
+```bash
+AIOHTTP_CLIENT_ASYNC_DNS_RESOLVER=true
+```
+
+If you turn it on, exercise your models, web search and any internal services afterwards, and be aware that names your system serves from somewhere other than `/etc/resolv.conf` or the hosts file (`.local` via avahi/mDNS, NIS or LDAP directories, Windows NBNS) may stop resolving. See [`AIOHTTP_CLIENT_ASYNC_DNS_RESOLVER`](/reference/env-configuration#aiohttp_client_async_dns_resolver) for the full picture and [Performance → DNS Resolver](/troubleshooting/performance#dns-resolver) for what it buys you.
+
+## Model List Loading Issues (Slow UI / Unreachable Endpoints)
+
+If your Open WebUI takes a long time to load models, or the model selector spins indefinitely, it may be due to an unreachable or slow API endpoint configured in your connections.
+
+### Common Symptoms
+
+- Model selector shows a loading spinner for extended periods
+- `500 Internal Server Error` on `/api/models` endpoint
+- UI becomes unresponsive when opening Settings
+- Docker/server logs show: `Connection error: Cannot connect to host...`
+
+### Cause: Unreachable Endpoints
+
+When you configure multiple Ollama or OpenAI base URLs (for load balancing or redundancy), Open WebUI attempts to fetch models from **all** configured endpoints. If any endpoint is unreachable, the system waits for the full connection timeout before returning results.
+
+By default, Open WebUI waits **10 seconds** per unreachable endpoint when fetching the model list. Endpoints are queried concurrently, so the wait is the slowest one, not the sum.
+
+### Solution 1: Adjust the Timeout
+
+Lower the timeout for model list fetching using the `AIOHTTP_CLIENT_TIMEOUT_MODEL_LIST` environment variable:
+
+```bash
+# Set a shorter timeout (in seconds) for faster failure on unreachable endpoints
+AIOHTTP_CLIENT_TIMEOUT_MODEL_LIST=3
+```
+
+This reduces how long Open WebUI waits for each endpoint before giving up and continuing.
+
+### Solution 2: Fix or Remove Unreachable Endpoints
+
+1. Go to **Settings > Connections** (admin section)
+2. Review your Ollama and OpenAI base URLs
+3. Remove or correct any unreachable IP addresses or hostnames
+4. Save the configuration
+
+### Solution 3: Recover from Database-Persisted Bad Configuration
+
+If you saved an unreachable URL and now can't access the Settings UI to fix it, the bad configuration is persisted in the database and takes precedence over environment variables. Use one of these recovery methods:
+
+**Option A: Reset configuration on startup**
+```bash
+# Forces environment variables to override database values on next startup
+RESET_CONFIG_ON_START=true
+```
+
+**Option B: Always use environment variables**
+```bash
+# Prevents database values from taking precedence (changes in UI won't persist across restarts)
+ENABLE_PERSISTENT_CONFIG=false
+```
+
+**Option C: Manual database cleanup (advanced)**
+
+If using SQLite, stop the container and run:
+```bash
+sqlite3 webui.db "DELETE FROM config WHERE key IN ('ollama.base_urls','openai.api_base_urls');"
+```
+
+:::warning
+
+Manual database manipulation should be a last resort. Always back up your database first.
+
+:::
+
+### Related Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `AIOHTTP_CLIENT_TIMEOUT_TOOL_SERVER` | Inherits `AIOHTTP_CLIENT_TIMEOUT` | Timeout (seconds) for executing tool server API calls |
+| `AIOHTTP_CLIENT_TIMEOUT_TOOL_SERVER_DATA` | `10` | Timeout (seconds) for loading tool server metadata/spec data |
+| `AIOHTTP_CLIENT_TIMEOUT_MODEL_LIST` | `10` | Timeout (seconds) for fetching model lists |
+| `AIOHTTP_CLIENT_TIMEOUT` | unset (no timeout) | General API request timeout. `300` is only the fallback for a value that is not a whole number |
+| `RESET_CONFIG_ON_START` | `false` | Reset database config to env var values on startup |
+| `ENABLE_PERSISTENT_CONFIG` | `true` | Whether database config takes precedence over env vars |
+
+See the [Environment Configuration](/reference/env-configuration#aiohttp_client_timeout_model_list) documentation for more details.
+
+## Slow Performance or Timeouts on Low-Spec Hardware
+
+If you're experiencing slow page loads, API timeouts, or unresponsive UI, especially on resource-constrained systems, this may be related to database session sharing, if you switched it on. It is off by default.
+
+### Cause
+
+Database session sharing can overwhelm low-spec hardware (Raspberry Pi, containers with minimal CPU, etc.) or SQLite databases under concurrent load.
+
+### Solution
+
+Turn database session sharing back off:
+
+```bash
+DATABASE_ENABLE_SESSION_SHARING=false
+```
+
+For PostgreSQL on adequate hardware, enabling this setting may improve performance. See the [DATABASE_ENABLE_SESSION_SHARING](/reference/env-configuration#database_enable_session_sharing) documentation for details.
+
+## SSL Connection Issue with Hugging Face
+
+If you encounter an SSL error connecting to Hugging Face:
 
 1. **Check Hugging Face Server Status**:
    Verify if there's a known outage or issue on their end.
@@ -55,18 +399,94 @@ Encountered an SSL error? It could be an issue with the Hugging Face server. Her
 docker run -d -p 3000:8080 -e HF_ENDPOINT=https://hf-mirror.com/ --add-host=host.docker.internal:host-gateway -v open-webui:/app/backend/data --name open-webui --restart always ghcr.io/open-webui/open-webui:main
 ```
 
-## 🍏 Podman on MacOS
+## SSL Certificate Issues with Internal Tools
 
-Running on MacOS with Podman? Here’s how to ensure connectivity:
+If you are using external tools like Tika, Ollama (for embeddings), or an external reranker with self-signed certificates, you might encounter SSL verification errors.
 
-1. **Enable Host Loopback**:
-   Use `--network slirp4netns:allow_host_loopback=true` in your command.
+### Common Symptoms
 
-2. **Set OLLAMA_BASE_URL**:
-   Ensure it points to `http://host.containers.internal:11434`.
+- Logs show `[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate`
+- Tika document ingestion fails
+- Embedding generation fails with SSL errors
+- Reranking fails with SSL errors
+
+### Solution
+
+You can disable SSL verification for these internal tool connections using the following environment variables:
+
+1.  **For synchronous requests (Tika, External Reranker):**
+    ```bash
+    REQUESTS_VERIFY=false
+    ```
+
+2.  **For asynchronous requests (Ollama Embeddings):**
+    ```bash
+    AIOHTTP_CLIENT_SESSION_SSL=false
+    ```
+
+:::warning
+Disabling SSL verification reduces security. Only do this if you trust the network and the services you are connecting to (e.g., functioning within a secure internal network).
+:::
+
+For Milvus over TLS, point [`MILVUS_SERVER_PEM_PATH`](/reference/env-configuration#milvus_server_pem_path) at the CA or server certificate. Verification stays on.
+
+## Podman on MacOS
+
+For Podman on MacOS:
+
+1. **Enable Host Access**: Podman 5.0+ uses **pasta** by default, which simplifies host loopback. On older versions, use `--network slirp4netns:allow_host_loopback=true`.
+2. **Set OLLAMA_BASE_URL** to **`http://host.containers.internal:11434`**.
 
 **Example Podman Command**:
 ```bash
-podman run -d --network slirp4netns:allow_host_loopback=true -p 3000:8080 -e OLLAMA_BASE_URL=http://host.containers.internal:11434 -v open-webui:/app/backend/data --name open-webui --restart always ghcr.io/open-webui/open-webui:main
+podman run -d -p 3000:8080 -e OLLAMA_BASE_URL=http://host.containers.internal:11434 -v open-webui:/app/backend/data --name open-webui --restart always ghcr.io/open-webui/open-webui:main
 ```
 
+
+## SSL/TLS Errors with Web Search
+
+If you are encountering SSL errors while using the Web Search feature, they usually fall into two categories: Proxy configuration issues or Certificate verification issues.
+
+### Certificate Verification Issues
+
+If you are seeing SSL verification errors when Open WebUI tries to fetch content from websites (Web Loader):
+
+- **Symptom**: `[SSL: CERTIFICATE_VERIFY_FAILED]` when loading search results.
+- **Solution**: You can disable SSL verification for the Web Loader (scraper) specifically.
+  ```bash
+  ENABLE_WEB_LOADER_SSL_VERIFICATION=false
+  ```
+  > **Note**: This setting applies to the *fetching* of web pages. If you are having SSL issues with the Search Engine itself (e.g., local SearXNG) or subsequent steps (Embedding/Reranking), see the sections below.
+
+### Proxy Configuration Issues
+
+If you're seeing SSL errors like `UNEXPECTED_EOF_WHILE_READING` or `Max retries exceeded` when using web search providers (Bocha, Tavily, etc.):
+
+#### Common Symptoms
+
+- `SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING]'))`
+- `Max retries exceeded with url: /v1/web-search`
+- Web search works in standalone Python scripts but fails in Open WebUI
+
+#### Cause: HTTP Proxy Configured for HTTPS Traffic
+
+This typically happens when you have an **HTTP proxy** configured for **HTTPS traffic**. The HTTP proxy cannot properly handle TLS connections, causing SSL handshake failures.
+
+Check your environment for these variables:
+- `HTTP_PROXY` / `http_proxy`
+- `HTTPS_PROXY` / `https_proxy`
+
+If your `https_proxy` points to `http://...` (HTTP) instead of `https://...` (HTTPS), SSL handshakes will fail because the proxy terminates the connection unexpectedly.
+
+#### Solutions
+
+1. **Fix proxy configuration**: Use an HTTPS-capable proxy for HTTPS traffic, or configure your HTTP proxy to properly support CONNECT tunneling for SSL
+2. **Bypass proxy for specific hosts**: Set `NO_PROXY` environment variable:
+   ```bash
+   NO_PROXY=api.bochaai.com,api.tavily.com,api.search.brave.com
+   ```
+3. **Disable proxy if not needed**: Unset the proxy environment variables entirely
+
+#### Why Standalone Scripts Work
+
+When you run a Python script directly, it may not inherit the same proxy environment variables that your Open WebUI service is using. The service typically inherits environment variables from systemd, Docker, or your shell profile, which may have different proxy settings.

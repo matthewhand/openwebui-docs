@@ -1,0 +1,114 @@
+---
+sidebar_position: 32
+title: "Self-Hosted Gemini Alternative"
+sidebar_label: "Open WebUI & Gemini"
+description: "Looking for a self-hosted Gemini alternative? Use Google AI models through Open WebUI on your own terms."
+keywords: ["Open WebUI vs Gemini", "Gemini alternative", "self-hosted Gemini", "Gemini alternative self-hosted", "Google AI self-hosted", "open webui alternative", "open webui comparison"]
+---
+
+import Head from '@docusaurus/Head';
+
+<Head>
+<script type="application/ld+json">{JSON.stringify({"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Can I use Gemini in Open WebUI?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Add your Google AI API key in Settings and Gemini models appear in the model selector."}}, {"@type": "Question", "name": "Can I self-host Gemini?", "acceptedAnswer": {"@type": "Answer", "text": "Not Gemini itself, but you can use Gemini models through Open WebUI via the Google AI API. Open WebUI runs on your infrastructure, though API calls still go to Google."}}]})}</script>
+</Head>
+
+
+# Open WebUI & Gemini
+
+*Last updated: August 2026*
+
+[Gemini](https://gemini.google.com/) brings Google's AI research into a consumer product with strong multimodal capabilities (text, vision, audio, code), generous context windows, and natural integration with Google Workspace. Gemini 3.5 Pro is among the strongest models available for code and complex tasks.
+
+Commercial · Free tier available
+
+---
+
+## What Gemini Does Well
+
+- **Multimodal strength** across text, images, audio, video, and code in a single model
+- **Google Workspace integration** that works naturally with Gmail, Docs, Drive, and other Google tools
+- **Gems** for creating custom AI personas with specific instructions and behavior
+- **NotebookLM** for turning documents into interactive study guides and audio overviews
+- **Deep Research** that conducts multi-step research and produces comprehensive reports
+- **Generous context windows** with Gemini 3.5 Pro handling large documents and codebases
+- **Competitive API pricing** as one of the most cost-effective APIs for high-quality models
+- **Code generation** where Gemini 3.5 Pro is among the strongest for code tasks
+- **Google Search grounding** with responses backed by Google's search infrastructure
+- **Zero setup** and available immediately through your Google account
+
+---
+
+## What Open WebUI Does Well
+
+- **Full agentic platform** with [builtin tools](/features/extensibility/plugin/tools#built-in-system-tools-nativeagentic-mode) the model calls itself, [MCP](/features/extensibility/mcp) servers, [sub-agents](/features/chat-conversations/chat-features/subagents), [timers](/features/chat-conversations/chat-features/timers) and [automations](/features/chat-conversations/chat-features/automations), driving Gemini and every other model the same way
+- **Customise practically everything**, from per-model prompts, tools, knowledge and parameters to [filters, pipes, actions and event functions](/features/extensibility/plugin/functions) that change behaviour anywhere in the pipeline, plus theming, banners and per-group permissions
+- **Any model, one interface** so you can use Gemini *alongside* Claude, GPT-5.6, and local models
+- **Self-hosted** so the platform itself runs on your infrastructure
+- **Knowledge & RAG** for persistent knowledge bases with advanced retrieval
+- **Team platform** with Channels, Notes, Automations, RBAC, SSO/OIDC/LDAP, and SCIM 2.0
+- **Open Terminal** providing a full sandboxed computing environment
+
+---
+
+## At a Glance
+
+| | Open WebUI | Gemini |
+| :--- | :--- | :--- |
+| **Models** | Any model from any provider | Gemini model family |
+| **Multimodal** | Depends on connected models | Native text, vision, audio, video, code |
+| **Knowledge & RAG** | 13 vector DBs, 8 extraction engines, hybrid search | Google Search grounding, file uploads |
+| **Ecosystem** | Connects to any API via MCP/OpenAPI | Deep Google Workspace integration |
+| **Data** | Self-hosted, your infrastructure | Cloud-hosted by Google |
+| **Pricing** | Free community edition; Enterprise plans available | Free tier, Advanced (Google One AI Premium) |
+
+---
+
+## When to Use Each
+
+**Choose Gemini if** you live in the Google ecosystem and want AI that integrates naturally with Gmail, Docs, Drive, and Search. NotebookLM and Deep Research are standout features, especially for Google-heavy workflows. The API pricing is also among the most competitive.
+
+**Choose Open WebUI if** you want to use Gemini alongside other providers, need persistent knowledge bases, or want to self-host. Open WebUI connects to the Google AI API so you still get Gemini's models.
+
+**Use both.** Use Gemini directly for Google Workspace integration and NotebookLM. Connect Open WebUI to the Google AI API for Gemini models alongside Claude, OpenAI, and local models in one interface.
+
+---
+
+## Use Gemini Through Open WebUI
+
+Gemini models are available through Open WebUI via the Google AI API. You can use Gemini's multimodal capabilities alongside other models you connect.
+
+**How to connect:**
+
+1. Get an API key from [aistudio.google.com](https://aistudio.google.com/)
+2. In Open WebUI, go to **Settings → Connections** (admin section)
+3. Add a new connection with the base URL `https://generativelanguage.googleapis.com/v1beta/openai` and your Google AI API key
+4. Gemini models will appear in your model selector
+
+:::warning Tools need extra setup on this endpoint
+Google's OpenAI compatibility layer uses a different tool-call shape than OpenAI-compatible clients expect, so a tool-using turn can come back as an empty assistant message. This can affect builtin tools such as Memory. Set **Function Calling** to **Legacy** in the model's Advanced Params, or route Gemini through a gateway such as LiteLLM or OpenRouter. See [Blank Replies When the Model Uses a Tool](/troubleshooting/connection-error#blank-replies-when-the-model-uses-a-tool) and the [OpenAI-compatible provider guide](/getting-started/quick-start/connect-a-provider/starting-with-openai-compatible).
+:::
+
+---
+
+*Gemini brings strong multimodal AI to the Google ecosystem. Open WebUI is one way to use those models alongside others, on your own infrastructure.*
+
+**Ready to try Open WebUI?** [Get started →](/getting-started)
+
+
+
+---
+
+## Frequently Asked Questions
+
+**Can I use Gemini in Open WebUI?**
+Yes. Add your Google AI API key in Settings and Gemini models appear in the model selector.
+
+**Can I self-host Gemini?**
+Not Gemini itself, but you can use Gemini models through Open WebUI via the Google AI API. Open WebUI runs on your infrastructure, though API calls still go to Google.
+
+**Can I use Gemini and Claude together?**
+Yes, Open WebUI supports connecting to multiple providers at once.
+
+---
+
+**Related:** [Open WebUI & ChatGPT](/alternatives/chatgpt) · [Open WebUI & Claude](/alternatives/claude) · [Open WebUI & Ollama](/alternatives/ollama)

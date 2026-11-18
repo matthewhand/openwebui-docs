@@ -1,11 +1,9 @@
-
-
-# Install with Conda
+## Install with Conda
 
 1. **Create a Conda Environment:**
 
    ```bash
-   conda create -n open-webui python=3.11
+   conda create -n open-webui python=3.12
    ```
 
 2. **Activate the Environment:**
@@ -25,3 +23,24 @@
    ```bash
    open-webui serve
    ```
+
+:::tip 'open-webui: command not found'?
+If your terminal says the command doesn't exist:
+1. Ensure your conda environment is **activated** (`conda activate open-webui`).
+2. If you want to store your data in a specific place, use (Linux/Mac): `DATA_DIR=./data open-webui serve` or (Windows): `$env:DATA_DIR=".\data"; open-webui serve`
+:::
+
+### Uninstall
+
+1.  **Remove the Conda Environment:**
+    ```bash
+    conda remove --name open-webui --all
+    ```
+
+2.  **Remove Data (WARNING: Deletes all data):**
+    Without `DATA_DIR`, the data directory sits inside the environment (`.../site-packages/open_webui/data`), so removing the environment above already deletes it. If you set `DATA_DIR`, delete that directory:
+    ```bash
+    rm -rf ~/.open-webui
+    ```
+
+---

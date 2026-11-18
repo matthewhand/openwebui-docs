@@ -1,0 +1,85 @@
+---
+sidebar_position: 2
+title: "Container Service"
+---
+
+# Container Service
+
+Run the official `ghcr.io/open-webui/open-webui` image on a managed container platform such as AWS ECS/Fargate, Azure Container Apps, or Google Cloud Run.
+
+:::info Prerequisites
+Before proceeding, ensure you have configured the [shared infrastructure requirements](/enterprise/deployment#shared-infrastructure-requirements): PostgreSQL, Redis, a vector database, shared storage, and content extraction.
+:::
+
+## When to Choose This Pattern
+
+- You want container benefits (immutable images, versioned deployments, no OS management) without Kubernetes complexity
+- Your organization already uses a managed container platform
+- You need fast scaling with minimal operational overhead
+- You prefer managed infrastructure with platform-native auto-scaling
+
+## Architecture
+
+```mermaid
+flowchart TB
+    LB["Load Balancer"]
+
+    subgraph CS["Container Service"]
+        T1["Container Task 1"]
+        T2["Container Task 2"]
+        T3["Container Task N"]
+    end
+
+    subgraph Backend["Managed Backing Services"]
+        PG["PostgreSQL + PGVector"]
+        Redis["Redis"]
+        S3["Object Storage"]
+        Tika["Tika"]
+    end
+
+    LB --> CS
+    CS --> Backend
+```
+
+## Image Selection
+
+Use **versioned tags** for production stability:
+
+```
+ghcr.io/open-webui/open-webui:v0.x.x
+```
+
+Avoid the rolling `:main` and `:latest` tags in production; pin a `v0.x.y` tag from the [Open WebUI releases](https://github.com/open-webui/open-webui/releases). With PostgreSQL, PGVector, S3 storage and external embedding and extraction services, the `v0.x.y-slim` variant is enough and much smaller. See [image variants](/getting-started/quick-start#image-variants).
+
+## Scaling Strategy
+
+- **Platform-native auto-scaling**: Configure your container service to scale on CPU utilization, memory, or request count.
+- **Health checks**: Use `/health` for liveness and `/ready` for readiness; `/ready` waits for startup to finish and checks database and Redis connectivity.
+- **Task-level env vars**: Pass all shared infrastructure configuration as environment variables or secrets in your task definition.
+- **Session affinity**: Optional; required only with `ENABLE_WEBSOCKET_SUPPORT=false`. See [Session Affinity](/troubleshooting/multi-replica#session-affinity-sticky-sessions). With `WEBSOCKET_MANAGER=redis`, Redis carries live updates between instances either way.
+
+## Key Considerations
+
+| Consideration | Detail |
+| :--- | :--- |
+| **Storage** | Use object storage (S3, GCS, Azure Blob) or a shared filesystem (such as EFS). Container-local storage is ephemeral and not shared across tasks. |
+| **Tika sidecar** | Run Tika as a sidecar container in the same task definition, or as a separate service. A sidecar keeps extraction traffic local. |
+| **Secrets management** | Use your platform's secrets manager (AWS Secrets Manager, Azure Key Vault, GCP Secret Manager) for `DATABASE_URL`, `REDIS_URL`, and `WEBUI_SECRET_KEY`. |
+| **Updates** | Scale the service down to a single task, deploy the new image on it (`ENABLE_DB_MIGRATIONS=true`), wait for it to become healthy, then scale the remaining tasks back up (`ENABLE_DB_MIGRATIONS=false`). Rolling updates are not supported across a release that changes the schema, so old and new tasks must never serve traffic at the same time. See [Updates and Migrations](/troubleshooting/multi-replica#updates-and-migrations). |
+
+## Anti-Patterns to Avoid
+
+| Anti-Pattern | Impact | Fix |
+| :--- | :--- | :--- |
+| Using local SQLite | Data loss on task restart, database locks with multiple tasks | Set `DATABASE_URL` to PostgreSQL |
+| Default ChromaDB | SQLite-backed vector DB crashes under multi-process access | Set `VECTOR_DB=pgvector` (or Milvus/Qdrant) |
+| Inconsistent `WEBUI_SECRET_KEY` | Login loops, 401 errors, sessions that don't persist across tasks | Set the same key on every task via secrets manager |
+| No Redis | WebSocket failures, "Model Not Found" errors | Set `REDIS_URL` and `WEBSOCKET_MANAGER=redis` |
+
+For container basics, see the [Quick Start guide](/getting-started/quick-start).
+
+---
+
+**Need help planning your enterprise deployment?** Our team works with organizations worldwide to design and implement production Open WebUI environments.
+
+[**Contact Enterprise Sales →**](https://openwebui.com/contact/sales)

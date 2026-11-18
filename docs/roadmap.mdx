@@ -1,74 +1,99 @@
 ---
-sidebar_position: 800
-title: "🛣️ Roadmap"
+sidebar_position: 1400
+title: "Roadmap"
 ---
 
-import { TopBanners } from "@site/src/components/TopBanners";
+import ThemedImage from '@theme/ThemedImage';
+import useBaseUrl from '@docusaurus/useBaseUrl';
 
-<TopBanners />
+# Roadmap
 
-# Open WebUI Roadmap! 🌟
+<ThemedImage
+  alt="Roadmap: a path of tiles leading to a raised milestone"
+  sources={{
+    light: useBaseUrl('/images/banners/roadmap-light.svg'),
+    dark: useBaseUrl('/images/banners/roadmap-dark.svg'),
+  }}
+  style={{ width: '100%', margin: '0.25rem 0 1.75rem' }}
+/>
 
-At Open WebUI, we're committed to continually enhancing our platform to provide the best experience for our users. Below, you'll find the structured roadmap for our ongoing and future developments, categorized into Interface, Information Retrieval, and Community.
-
-## Interface 🖥️
-
-Our roadmap for interface innovations aims to create a highly intuitive and accessible platform. These will not only improves user satisfaction but also enhance productivity by reducing the cognitive load on users.
-
-
-- 🔧 **Streamlined Fine-tune Support**: Open WebUI will offer a seamless fine-tuning process by allowing users to automatically build a fine-tune dataset simply by using the interface and rating the responses. We will provide Python notebooks to help preprocess your dataset, making it ready for fine-tuning directly from the notebook. This approach will be super simple and elegantly integrates fine-tuning into user workflows.
-
-- 📈 **Advanced User Tracking and Cost Management Tools**: Users will gain access to comprehensive tools designed for tracking application performance and user activities, as well as managing costs effectively. These tools will empower users with the data they need to make informed decisions, improve user experiences, and maintain budget control, optimizing the use of resources across their AI applications.
-
-- 💬 **"Channels" Feature**: Integrating a built-in chat solution for Open WebUI users that includes AI moderation and assistance capabilities can significantly enhance user engagement and provide timely assistance, improving overall user satisfaction and retention.
-
-- 🧠 **AI Workflow Tool**: A node-based tool to orchestrate and compose multiple aspects of AI systems. This tool will allow users to visually connect different AI modules and services, creating complex workflows with ease. It's designed to empower users to harness the full potential of AI without needing deep technical knowledge in AI programming.
-
-- 🔊 **Local Text-to-Speech Integration**: This feature will allow natural language processing to convert text into lifelike spoken audio, thus making the platform more accessible, especially for visually impaired users. This integration helps in consuming information without screen interaction, facilitating multitasking and improving user engagement.
-
-- 📣 **Wakeword Detection**: Incorporating hands-free operation through voice commands will not only enhance accessibility but also align with emerging trends in IoT and smart environments, making our platform future-ready.
-
-- 💻 **Better Code Execution**: Enhancing coding functionalities within the platform supports a broad range of development activities, making it a one-stop solution for developers, thereby attracting a wider tech audience and fostering a robust developer community.
-
-- 🤖 **Code Interpreter Function**: A flexible code interpreter embedded into the platform can support multiple programming languages, which reduces the dependency on external tools and streamlines the development process, increasing efficiency.
-
-- 📦 **Packaged Single Binary Executable**: Simplifying deployment and ensuring compatibility across different platforms, we aim to offer our interface as a single binary executable. This approach will facilitate effortless installation and updates, significantly enhancing usability for all users, especially those with limited technical expertise.
-
-## Information Retrieval (RAG) 📚
-
-Open WebUI currently provides an interface that enables the use of existing information retrieval (IR) models efficiency. However, we believe there is vast potential for improvement. We fully recognize the limitations of our current RAG (Retrieval-Augmented Generation) implementation in our WebUI, understanding that a one-size-fits-all approach does not effectively meet all users' needs. 
-
-To address this, we are committed to transforming our framework to be highly modular and extensively configurable. This new direction will enable users to tailor the information retrieval process to their specific requirements with ease, using a straightforward, interactive interface that allows for simple drag-and-drop customization. This refinement aims to significantly enhance user experience by providing a more adaptable and personalized IR setup.
-
-Here's our focused plan for advancing our information retrieval capabilities:
-
-- 🌐 **Customizable RAG Framework**: Envision a future where you can effortlessly tailor your IR setup via a user-friendly interface. This will include modular components that users can drag, drop, and configure without needing deep technical knowledge.
-
-- 🔄 **Advanced Integration with SoTA Methods**: We aim to incorporate the latest developments in retrieval methods, enhancing accuracy and efficiency with advanced techniques and architectures.
-
-- 🔍 **Dedicated R&D**: We’re scaling up our research and development to discover and integrate novel retrieval methods that push the boundaries of current methods, in collaboration with leading research entities.
-
-## Community 🤝
-
-We aim to create a vibrant community where everyone can contribute to and benefit from shared knowledge and developments:
-
-- 🏆 **LLM Leaderboard**: A community-driven approach to evaluate and rank models ensures transparency and continuous improvement, leveraging real-world applications to benchmark performance instead of relying on standard datasets that might not reflect practical utility.
-
-- 👥 **Sub-Communities**: Encouraging niche communities to curate datasets and optimize prompts can lead to better-tuned models, as these communities have specific insights and detailed feedback that typically go unnoticed in broader datasets.
-
-🔗 **Community Whitepaper**: Explore our detailed strategy and join us in shaping the future of AI-driven platforms in our [whitepaper](https://openwebui.com/assets/files/whitepaper.pdf).
-
-
-# Vision for the Future 🔭
-
-Our relentless effort stems from a clear vision we hold dearly: enhancing your daily life, saving time and allowing for more focus on what truly matters. 
-
-Imagine a world where you think, and it happens. You desire a cup of coffee made exactly the way you love, and it's brewed for you. A world where you, simply think of a comprehensive data analysis report in a particular format, and it's done at the speed of your thought. The core idea is to turn the time-consuming, routine tasks over to our AI interface, freeing up your time and attention.
-
-This isn’t a sci-fi future; together, we are working towards it right now. As our AI models gradually become more capable and intuitively understand your specific needs, your most mundane responsibilities become automated. Through this profound shift, our collective time allowance can be redistributed towards grand endeavours. Think space exploration, longevity research or simply extra moments with loved ones. 
-
-Creating this imagined future won't be a walk in the park, but with your help, we believe it's within our reach. Open WebUI is more than just tech - it's there to enhance your day, giving you more space for what's really important. Together, we're working on a brighter tomorrow. Thanks for joining us in this extraordinary journey.
+We're building a home for AI people can shape, operate, and depend on as their needs evolve.
 
 ---
 
-Join us as we push the boundaries of technology with these ambitious and transformative features in our roadmap! 💡🚀 Your participation and feedback are crucial as we strive to make Open WebUI a pioneering tool in technology advancement.
+## In Progress
+
+### Usage Tracking and Cost Management
+
+Know exactly who's using what, how many tokens are flowing through each model, and what it's costing you. Per-user breakdowns, per-model analytics, and budget controls for teams that need to scale AI usage without surprises.
+
+### Accessibility
+
+Every release gets closer. Screen reader support, full keyboard navigation, ARIA compliance, high-contrast modes. AI should be for everyone, and we take that literally.
+
+---
+
+## Planned
+
+### Full Internationalization (i18n) Coverage
+
+Make every part of Open WebUI ready for localization, from everyday conversations and workspace tools to settings, admin screens, notifications, and error messages. Close translation gaps and ensure language and locale preferences are respected consistently throughout the experience.
+
+### Continuous Quality Monitoring
+
+Set criteria for reviewing responses automatically: whether an answer follows internal policy, uses the supplied documents, or leaves a request unresolved. Apply checks to existing chat history and a configurable sample of new activity. Each result includes an explanation and links to the conversation so admins can investigate recurring problems.
+
+### Configurable Analytics
+
+Let admins choose what to measure and how to group it, from individual tool calls to entire conversations. Define request categories and quality measures specific to the organization. Save views that combine those results with usage, response times, and cost, with breakdowns by department, model, and business process.
+
+### Expert Review
+
+Assign conversation samples to subject matter experts using shared review criteria. Record what went wrong and what a correct answer should contain. Measure where automated checks disagree with reviewers, then use those cases to improve the checks and expand coverage.
+
+### Regression Testing
+
+Keep a versioned test collection drawn from real conversations and expert corrections. Before changing a model or system prompt, rerun those cases and compare the results with the current configuration. See which tasks improved, which got worse, and how response times and cost changed.
+
+### Integrated Fine-tuning
+
+Your conversations and ratings become training data. Open WebUI will build fine-tune datasets from your actual usage, preprocess them, and hand you a ready-to-train package. Personalized models, built from how you already work. Your AI gets better the more you use it.
+
+### Enhanced Collaboration
+
+Multiple users in the same conversation, watching responses stream in together, annotating, branching, and building on each other's prompts. Brainstorming with your team and your AI in the same room.
+
+Comment on specific responses and shared workspace content, mention teammates, and resolve discussions once feedback has been addressed. A central inbox brings together mentions, replies, and updates to work you follow, with unread tracking and notification preferences so you can catch up and respond where you're needed.
+
+### Connected Workspaces
+
+Keep conversations, activity, and people connected across Open WebUI and the tools your team already uses. Starting with Slack bot notifications: receive personal direct messages about activity in your Open WebUI channels while you're away. Build toward a connected workspace where updates and collaboration can move between tools.
+
+### Wakeword Detection
+
+Say the word and start talking. No keyboard, no click, no tab switching. Walk into a room, speak, and your AI is already listening. This is what the future of human-computer interaction looks like.
+
+### User Profiles and Sharing
+
+Publish your model configurations, prompts, and skills. Follow other users. Build on what they've shared. A growing ecosystem of ready-to-use AI setups that anyone can import and make their own.
+
+### Community Leaderboard
+
+Real-world model rankings based on actual usage and feedback, not synthetic benchmarks. See which models perform best for code, for writing, for analysis, ranked by the people who use them every day.
+
+
+---
+
+## The Vision
+
+We believe AI will become part of how you make decisions, work with others, and carry out responsibilities people depend on. You should have the freedom to choose and the authority to shape AI's role in your life and work, including what it can access and how it acts.
+
+**We're building Open WebUI to be a home worth choosing.** A place for your own thinking and the knowledge you build together. Where the best work from across AI meets your tools, shared experience, and ways of working, from everyday collaboration to critical operations.
+
+Models will advance. Missions will evolve. We want you to be ready to adopt new capabilities, keep hard-earned knowledge available as people and roles change, and sustain essential work in disconnected environments. A home that serves you well today should leave you free to choose what comes next.
+
+---
+
+Want to help us ship faster? Run the [dev branch](https://github.com/open-webui/open-webui), test upcoming features, and report what you find. Every bug caught early lets us tackle more.
+
+For discussion and real-time progress, join us on [Discord](https://discord.gg/5rJgQTnV4s) or follow development on [GitHub](https://github.com/open-webui/open-webui).

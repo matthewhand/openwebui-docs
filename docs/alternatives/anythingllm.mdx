@@ -1,0 +1,101 @@
+---
+sidebar_position: 9
+title: "Open WebUI vs AnythingLLM"
+sidebar_label: "Open WebUI & AnythingLLM"
+description: "Open WebUI vs AnythingLLM compared. Two of our favorite projects for local AI and document Q&A."
+keywords: ["Open WebUI vs AnythingLLM", "AnythingLLM alternative", "document QA", "local document AI", "private RAG", "open webui alternative", "open webui comparison", "best document AI", "self-hosted RAG"]
+---
+
+import Head from '@docusaurus/Head';
+
+<Head>
+<script type="application/ld+json">{JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do Open WebUI and AnythingLLM compare?","acceptedAnswer":{"@type":"Answer","text":"Both offer chat, document Q&A, agents, and model integrations. AnythingLLM organizes conversations and document knowledge into workspaces. Open WebUI uses chats, folders, and knowledge bases, alongside notes and channels. Each has its own interface and configuration options."}},{"@type":"Question","name":"Can I use both Open WebUI and AnythingLLM?","acceptedAnswer":{"@type":"Answer","text":"Yes. You can use them as separate applications and keep your existing setup while trying the other. Use either or both as it suits you."}},{"@type":"Question","name":"How do I get started?","acceptedAnswer":{"@type":"Answer","text":"Follow the setup guide for the project you'd like to try, connect a model, and start a conversation. Both projects have documentation for installation and configuration."}}]})}</script>
+</Head>
+
+# Open WebUI & AnythingLLM
+
+*Last updated: September 2026*
+
+[AnythingLLM](https://anythingllm.com/) by Mintplex Labs is one of our favorite projects in the local AI space. Create a workspace, add your documents, and start a conversation with that knowledge at hand. The workspace model keeps each project's documents and conversations together, and it's a really good way to organize your work. The desktop app makes running AI on your own machine approachable without a separate server setup. The team has done an excellent job making those pieces fit into an experience that's easy to get comfortable with.
+
+Their agent tools are worth exploring too: you can use built-in skills, connect MCP servers, write custom skills, and build flows that combine model instructions with API calls and file operations. Model providers, embeddings, and vector databases are configurable, so there's room to make the setup your own. That combination of a thoughtful interface and useful flexibility is a big part of why we like AnythingLLM so much. Mintplex Labs and the contributors have built something we’re happy to recommend, and we have a lot of respect for their work.
+
+[Website](https://anythingllm.com/) · [Documentation](https://docs.anythingllm.com/) · [GitHub](https://github.com/Mintplex-Labs/anything-llm) · [MIT License](https://github.com/Mintplex-Labs/anything-llm/blob/master/LICENSE)
+
+---
+
+## What AnythingLLM Does Well
+
+- **Document Q&A:** bring documents into your conversations and ask questions about their contents.
+- **Workspace model:** organize knowledge bases and conversations into separate projects.
+- **Embedding customization:** control over chunking, overlap, and embedding model selection lets you shape how your documents are prepared for retrieval.
+- **Vector database choice:** integrations include LanceDB, Chroma, Milvus, Pinecone, Qdrant, and Weaviate, giving you options for storing and searching document embeddings.
+- **Model choice:** support for local and cloud providers, including Ollama, OpenAI, Anthropic, Google, Azure, and Bedrock, gives people room to work with the models they prefer.
+- **Desktop app:** a standalone local experience for macOS, Windows, and Linux without Docker or a server.
+- **Self-hosted and cloud deployments:** Docker and hosted options give individuals and teams several ways to use the project.
+- **Local operation:** use local models and embeddings to work with documents on your own hardware.
+- **Agents and tools:** built-in skills for document retrieval, web browsing, and other tasks, alongside custom skills and MCP connections.
+- **Agent flows:** workflows can connect steps such as web scraping, API calls, model instructions, and file operations.
+- **Audio and images:** speech-to-text, text-to-speech, and image generation add ways to interact with AI beyond typing a message.
+- **Multi-user access:** the Docker version supports role-based permissions for shared deployments.
+- **Community contributions:** code, documentation, and ideas shared by the team and contributors.
+
+Explore the [AnythingLLM documentation](https://docs.anythingllm.com/) for features and setup details for each deployment.
+
+---
+
+## What Open WebUI Does Well
+
+- **Agents and scheduled work:** [built-in tools](/features/extensibility/plugin/tools#built-in-system-tools-nativeagentic-mode), [MCP servers](/features/extensibility/mcp), [sub-agents](/features/chat-conversations/chat-features/subagents), [timers](/features/chat-conversations/chat-features/timers), and [automations](/features/chat-conversations/chat-features/automations).
+- **Customization:** per-model prompts, tools, knowledge, and parameters, plus [filters, pipes, actions, and event functions](/features/extensibility/plugin/functions), theming, banners, and per-group permissions.
+- **Document retrieval:** vector database and extraction engine integrations, hybrid BM25 and vector search, cross-encoder reranking, and agentic retrieval.
+- **Ways to work:** Chat, Notes, Channels, Automations, Open Terminal, voice/video calls, and image generation.
+- **Team access:** Channels for collaboration, role-based access control, SSO/OIDC/LDAP, and SCIM 2.0.
+- **Model configuration:** combine a model with instructions, tools, knowledge, and parameters.
+- **Deployment and operations:** Kubernetes, horizontal scaling, Redis-backed sessions, OpenTelemetry, and analytics.
+
+---
+
+## At a Glance
+
+These are examples of features and options in each project. For configuration details, see the [AnythingLLM documentation](https://docs.anythingllm.com/) and [Open WebUI documentation](/getting-started).
+
+| | AnythingLLM | Open WebUI |
+| :--- | :--- | :--- |
+| **Chat and knowledge** | AI chat, document Q&A, workspaces | AI chat, document Q&A, knowledge bases |
+| **Document retrieval** | Embedding and chunking settings; vector database integrations | Embedding and extraction settings; vector database integrations |
+| **Organization** | Workspaces with document knowledge and conversations | Folders, tags, knowledge bases, notes, channels |
+| **Model providers** | Ollama, OpenAI, Anthropic, Google, Azure, Bedrock, and others | Ollama, OpenAI, Anthropic, Google, Azure, Bedrock, and others |
+| **Agents and extensibility** | Built-in and custom skills, MCP, agent flows, developer API | Built-in and Python tools, MCP, OpenAPI, functions, pipelines |
+| **Audio and images** | Speech-to-text, text-to-speech, image generation | Speech-to-text, text-to-speech, image generation |
+| **Shared access** | Docker multi-user mode with role-based permissions | Multi-user access with roles, groups, and permissions |
+
+---
+
+## Using Both
+
+You can use both Open WebUI and AnythingLLM. If you already use one, you can try the other alongside it and keep the setup you're happy with.
+
+Both support document Q&A, agents, and a range of model providers. Try them with your own documents and everyday tasks to get a feel for each interface. You may find yourself using both for different projects, or simply preferring one for a particular task.
+
+- [AnythingLLM documentation](https://docs.anythingllm.com/)
+- [Open WebUI documentation](/getting-started)
+
+---
+
+## Frequently Asked Questions
+
+**How do Open WebUI and AnythingLLM compare?**
+Both offer chat, document Q&A, agents, and model integrations. AnythingLLM organizes conversations and document knowledge into workspaces. Open WebUI uses chats, folders, and knowledge bases, alongside notes and channels. Each has its own interface and configuration options.
+
+**Can I use both Open WebUI and AnythingLLM?**
+Yes. You can use them as separate applications and keep your existing setup while trying the other. Use either or both as it suits you.
+
+**How do I get started?**
+Follow the setup guide for the project you'd like to try, connect a model, and start a conversation. Both projects have documentation for installation and configuration.
+
+[Open WebUI getting started](/getting-started) · [AnythingLLM documentation](https://docs.anythingllm.com/)
+
+---
+
+**Related:** [Open WebUI & LibreChat](/alternatives/librechat) · [Open WebUI & Dify](/alternatives/dify) · [Open WebUI & Ollama](/alternatives/ollama)

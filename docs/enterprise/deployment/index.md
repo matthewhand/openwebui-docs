@@ -1,0 +1,162 @@
+---
+sidebar_position: 3
+title: "Deployment Options"
+---
+
+# Scalable Enterprise Deployment Options
+
+Open WebUI's **stateless, container-first architecture** means the same application runs identically whether you deploy it as a Python process on a VM, a container in a managed service, or a pod in a Kubernetes cluster. The difference between deployment patterns is how you **orchestrate, scale, and operate** the application, not how the application itself behaves.
+
+:::tip Model Inference Is Independent
+How you serve LLM models is separate from how you deploy Open WebUI. You can use **managed APIs** (OpenAI, Anthropic, Azure OpenAI, Google Gemini) or **self-hosted inference** (Ollama, vLLM) with any deployment pattern. See [Integration](/enterprise/integration) for details on connecting models.
+:::
+
+:::info Sovereign AI Planning
+For sovereign AI deployments, start by defining four boundaries before choosing a runtime pattern: the deployment boundary, the model boundary, the identity boundary, and the data boundary. The [Sovereign AI Platform](/enterprise/sovereign-ai) guide maps these decisions to the relevant Open WebUI controls.
+:::
+
+---
+
+## Shared Infrastructure Requirements
+
+Regardless of which deployment pattern you choose, every scaled Open WebUI deployment requires the same set of backing services. Configure these **before** scaling beyond a single instance.
+
+| Component | Why It's Required | Options |
+| :--- | :--- | :--- |
+| **PostgreSQL** | Multi-instance deployments require a real database. SQLite does not support concurrent writes from multiple processes. | Self-managed, Amazon RDS, Azure Database for PostgreSQL, Google Cloud SQL |
+| **Redis** | WebSocket coordination, token revocation, and shared caches across instances (configuration is shared through PostgreSQL). | Self-managed, Amazon ElastiCache, Azure Cache for Redis, Google Memorystore |
+| **Vector Database** | The default ChromaDB uses a local SQLite backend that is not safe for multi-process access. | PGVector (shares PostgreSQL), Milvus, Qdrant, or ChromaDB in HTTP server mode |
+| **Shared Storage** | Uploaded files must be accessible from every instance. | Shared filesystem (NFS, EFS, CephFS) or object storage (`S3`, `GCS`, `Azure Blob`) |
+| **Content Extraction** | The default extractor parses documents inside the Open WebUI process, on its CPU and memory. | Apache Tika or Docling as a separate service |
+| **Embedding Engine** | The default SentenceTransformers model loads into every worker process at startup and runs on its CPU. | OpenAI Embeddings API, or Ollama running an embedding model |
+
+### Critical Configuration
+
+These environment variables **must** be set consistently across every instance:
+
+```bash
+# Shared secret: MUST be identical on all instances
+WEBUI_SECRET_KEY=your-secret-key-here
+
+# Database
+DATABASE_URL=postgresql://user:password@db-host:5432/openwebui
+
+# Vector Database (PGVector uses DATABASE_URL unless PGVECTOR_DB_URL is set)
+VECTOR_DB=pgvector
+
+# Redis
+REDIS_URL=redis://redis-host:6379/0
+WEBSOCKET_MANAGER=redis
+
+# Content Extraction
+CONTENT_EXTRACTION_ENGINE=tika
+TIKA_SERVER_URL=http://tika:9998
+
+# Embeddings
+RAG_EMBEDDING_ENGINE=openai
+
+# Storage: choose ONE
+# Option A: shared filesystem (mount the same volume to all instances, no env var needed)
+# Option B: object storage (see https://docs.openwebui.com/reference/env-configuration#cloud-storage for all required vars)
+# STORAGE_PROVIDER=s3
+
+# Workers: let the orchestrator handle scaling
+UVICORN_WORKERS=1
+
+# Migrations: only ONE instance should run migrations
+ENABLE_DB_MIGRATIONS=false
+```
+
+:::warning Database Migrations
+Set `ENABLE_DB_MIGRATIONS=false` on **all instances except one**. During updates, scale down to a single instance, allow migrations to complete, then scale back up. Concurrent migrations can corrupt your database.
+
+Rolling updates are not supported across a release that changes the schema, whatever rolling-deployment machinery your platform offers: every instance has to move to the new version at once, and old and new instances must never serve traffic against the same database at the same time. Back the database up before you start. See [Updates and Migrations](/troubleshooting/multi-replica#updates-and-migrations).
+:::
+
+For the complete step-by-step scaling walkthrough, see [Scaling Open WebUI](/getting-started/advanced-topics/scaling). For the full environment variable reference, see [Environment Variable Configuration](/reference/env-configuration).
+
+---
+
+## Choose Your Deployment Pattern
+
+Open WebUI supports three production deployment patterns. Each guide covers architecture, scaling strategy, and key considerations specific to that approach.
+
+### [Python / Pip on Auto-Scaling VMs](/enterprise/deployment/python-pip)
+
+Deploy `open-webui serve` as a systemd-managed process on virtual machines in a cloud auto-scaling group (AWS ASG, Azure VMSS, GCP MIG). Best for teams with established VM-based infrastructure and strong Linux administration skills, or when regulatory requirements mandate direct OS-level control.
+
+### [Container Service](/enterprise/deployment/container-service)
+
+Run the official Open WebUI container image on a managed platform such as AWS ECS/Fargate, Azure Container Apps, or Google Cloud Run. Best for teams wanting container benefits (immutable images, versioned deployments, no OS management) without Kubernetes complexity.
+
+### [Kubernetes with Helm](/enterprise/deployment/kubernetes-helm)
+
+Deploy using the official Open WebUI Helm chart on any Kubernetes distribution (EKS, AKS, GKE, OpenShift, Rancher, self-managed). Best for large-scale, mission-critical deployments requiring declarative infrastructure-as-code, advanced auto-scaling, and GitOps workflows.
+
+---
+
+## Deployment Comparison
+
+| | **Python / Pip (VMs)** | **Container Service** | **Kubernetes (Helm)** |
+| :--- | :--- | :--- | :--- |
+| **Operational complexity** | Moderate (OS patching, Python management) | Low (platform-managed containers) | Higher (requires K8s expertise) |
+| **Auto-scaling** | Cloud ASG/VMSS with health checks | Platform-native, minimal configuration | HPA with fine-grained control |
+| **Container isolation** | None (process runs directly on OS) | Full container isolation | Full container + namespace isolation |
+| **Updates** | Manual (scale down, update, scale up) | Stop all tasks, run one migration task, restart | Scripted with Helm; rollback does not undo migrations |
+| **Infrastructure-as-code** | Terraform/Pulumi for VMs + config mgmt | Task/service definitions (CloudFormation, Bicep, Terraform) | Helm charts + GitOps (Argo CD, Flux) |
+| **Best suited for** | Teams with VM-centric operations, regulatory constraints | Teams wanting container benefits without K8s complexity | Large-scale, mission-critical deployments |
+| **Minimum team expertise** | Linux administration, Python | Container fundamentals, cloud platform | Kubernetes, Helm, cloud-native patterns |
+
+---
+
+## Observability
+
+Production deployments should include monitoring and observability regardless of deployment pattern.
+
+### Health Checks
+
+- **`/health`**: Liveness check. Returns HTTP 200 while the process runs.
+- **`/ready`**: Readiness check. Returns 503 until startup has finished and the database and Redis (if configured) answer a ping. Use it for readiness probes and load balancer health checks.
+- **`/api/models`**: Lists the models the caller can use. It still returns 200 when a model backend is unreachable, so it does not prove backend health. Requires an authenticated user token; API keys work only after an admin enables them (`ENABLE_API_KEYS`, off by default).
+
+### OpenTelemetry
+
+Open WebUI supports **OpenTelemetry** for distributed tracing and HTTP metrics. Enable it with:
+
+```bash
+ENABLE_OTEL=true
+ENABLE_OTEL_TRACES=true
+ENABLE_OTEL_METRICS=true
+OTEL_EXPORTER_OTLP_ENDPOINT=http://your-collector:4317
+OTEL_EXPORTER_OTLP_INSECURE=true
+OTEL_SERVICE_NAME=open-webui
+```
+
+This auto-instruments FastAPI, SQLAlchemy, Redis, and HTTP clients, giving visibility into request latency, database query performance, and cross-service traces. `ENABLE_OTEL` alone exports nothing; each signal has its own switch (`ENABLE_OTEL_LOGS` for logs). The exporter speaks OTLP over gRPC by default, which is why the endpoint uses port 4317. Set `OTEL_EXPORTER_OTLP_INSECURE=true` when the collector's gRPC port has no TLS; Open WebUI passes this flag explicitly, so an `http://` endpoint alone does not disable TLS. To use an HTTP collector instead, set `OTEL_OTLP_SPAN_EXPORTER=http` and give the full signal URL, for example `http://your-collector:4318/v1/traces` (and `OTEL_METRICS_EXPORTER_OTLP_ENDPOINT` and `OTEL_LOGS_EXPORTER_OTLP_ENDPOINT` ending in `/v1/metrics` and `/v1/logs`), because Open WebUI passes the endpoint to the exporter unchanged.
+
+### Structured Logging
+
+Enable JSON-formatted logs for integration with log aggregation platforms (Datadog, Loki, CloudWatch, Splunk):
+
+```bash
+LOG_FORMAT=json
+GLOBAL_LOG_LEVEL=INFO
+```
+
+For full monitoring setup details, see [Monitoring](/reference/monitoring) and [OpenTelemetry](/reference/monitoring/otel).
+
+---
+
+## Next Steps
+
+- **[Architecture & High Availability](/enterprise/architecture)**: Deeper dive into Open WebUI's stateless design and HA capabilities.
+- **[Security](/enterprise/security)**: Compliance frameworks, SSO/LDAP integration, RBAC, and audit logging.
+- **[Integration](/enterprise/integration)**: Connecting AI models, pipelines, and extending functionality.
+- **[Scaling Open WebUI](/getting-started/advanced-topics/scaling)**: The complete step-by-step technical scaling guide.
+- **[Multi-Replica Troubleshooting](/troubleshooting/multi-replica)**: Solutions for common issues in scaled deployments.
+
+---
+
+**Need help planning your enterprise deployment?** Our team works with organizations worldwide to design and implement production Open WebUI environments.
+
+[**Contact Enterprise Sales →**](https://openwebui.com/contact/sales)

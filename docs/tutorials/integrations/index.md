@@ -1,0 +1,51 @@
+---
+sidebar_position: 0
+title: "Integrations"
+---
+
+# Integration Tutorials
+
+**Connect Open WebUI to LLM providers, developer tools, monitoring platforms, and external services.**
+
+These community-contributed guides cover specific integration scenarios with step-by-step instructions. For authentication and SSO integrations, see [Authentication & SSO](/tutorials/auth-sso).
+
+---
+
+### LLM Providers
+
+| Tutorial | What you'll achieve | Details |
+|----------|-------------------|---------|
+| [Azure OpenAI (Entra ID)](/tutorials/integrations/llm-providers/azure-openai) | Keyless authentication to Azure OpenAI via Entra ID | Admin · 30 to 60 min |
+| [DeepSeek R1 Dynamic](/tutorials/integrations/llm-providers/deepseekr1-dynamic) | Run the full 671B DeepSeek-R1 model via llama.cpp | Developer · 45 min |
+| [Intel GPU (IPEX-LLM)](/tutorials/integrations/llm-providers/ipex_llm) | Accelerate Ollama with IPEX-LLM on Intel GPUs | Developer · 20 min |
+
+---
+
+### Monitoring & Observability
+
+| Tutorial | What you'll achieve | Details |
+|----------|-------------------|---------|
+| [Helicone](/tutorials/integrations/monitoring/helicone) | Log and monitor LLM API calls, costs, and latency | Admin · 15 min |
+| [Langfuse](/tutorials/integrations/monitoring/langfuse) | Trace LLM usage and evaluate prompt quality | Admin · 10 min |
+
+---
+
+### Developer Tools
+
+| Tutorial | What you'll achieve | Details |
+|----------|-------------------|---------|
+| [Continue.dev](/tutorials/integrations/dev-tools/continue-dev) | Use Open WebUI as a backend for the Continue VS Code extension | Developer · 15 min |
+| [Jupyter Notebooks](/tutorials/integrations/dev-tools/jupyter) | Run code and create notebooks via Open WebUI's code interpreter | Developer · 20 min |
+| [iTerm2](/tutorials/integrations/dev-tools/iterm2) | Query Open WebUI models from your macOS terminal | Developer · 10 min |
+| [Firefox Sidebar](/tutorials/integrations/dev-tools/firefox-sidebar) | Pin Open WebUI in Firefox's built-in AI sidebar | User · 5 min |
+| [Browser Search Engine](/tutorials/integrations/dev-tools/browser-search-engine) | Add Open WebUI as a custom browser search engine | User · 5 min |
+
+---
+
+### External Services
+
+| Tutorial | What you'll achieve | Details |
+|----------|-------------------|---------|
+| [Notion (MCP)](/tutorials/integrations/mcp-notion) | Connect Notion via Model Context Protocol | User · 5 min |
+| [OneDrive & SharePoint](/tutorials/integrations/onedrive-sharepoint) | Pull Microsoft 365 documents into Open WebUI | Admin · 30 min |
+| [LibreTranslate](/tutorials/integrations/libre-translate) | Add self-hosted translation capabilities | Admin · 15 min |

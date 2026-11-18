@@ -1,0 +1,279 @@
+---
+sidebar_position: 10
+title: "File Browser"
+---
+
+# The File Browser
+
+When Open Terminal is connected, the **Files** tab of the [**Tabs**](/features/chat-conversations/chat-features/#tabs-side-panel) holds a **file browser**. It works like the file explorer on your computer. You can browse folders, open files, upload things and download results. Everything the AI creates shows up here automatically.
+
+![A new chat with the Files tab open](/images/open-terminal-file-browser.png)
+
+---
+
+## Browsing
+
+Click folders to navigate, and click files to preview them. A breadcrumb bar at the top shows where you are. Click the path to type a folder to open.
+
+**Files** in the **+** menu of the Tabs opens another Files tab, so you can keep several folders open side by side. Each Files tab is named after the folder it shows.
+
+To select several files, drag a selection box from an empty spot in the list. On a touch screen, hold your finger still for a moment before you drag.
+
+![Browsing a project directory with breadcrumb navigation](/images/open-terminal-file-browser-project.png)
+
+### Sorting
+
+Use the toolbar above the file list to sort by **Name**, **Size**, **Date Modified** or **Date Added**, ascending or descending. Folders always group ahead of files, so the sort order only reorders entries within each group. Sorting by date shows that date on each row next to the size, making it easier to find the latest output the AI just dropped into a working directory. Sorting by **Date Added** needs a terminal that reports when files were created.
+
+### Grid and list view
+
+The **Actions** menu (**...**) in the toolbar switches between **List view** and **Grid view**. Your browser remembers the choice.
+
+---
+
+## Previewing files
+
+On a desktop, hovering over a file shows a small preview of it: text files up to 1 MB and other files up to 20 MB.
+
+Click any file to see a full preview. Different file types display differently:
+
+:::info Word and PowerPoint rendering needs a recent terminal
+The terminal lays those files out itself, which needs Open Terminal 0.12.1 or newer running the default image. Otherwise the browser draws an approximation instead. See [Updating](./setup/updating.mdx) if your previews look rougher than the ones described here.
+:::
+
+### Text and code
+Source code and text files open in a code editor with syntax highlighting and line numbers. See [Editing files](#editing-files).
+
+![Python code with syntax highlighting and line numbers](/images/open-terminal-preview-code.png)
+
+### PDFs
+PDF documents render directly in the browser, so you can read them without downloading. A numbered **thumbnail strip** of the pages runs alongside the document; click a page to jump to it. It is hidden on a narrow panel.
+
+![File browser with rendered markdown preview](/images/open-terminal-preview-markdown.png)
+
+### Spreadsheets (CSV, TSV)
+Data files render as **formatted tables** with headers and clean rows, much easier to read than raw comma-separated text.
+
+![CSV data rendered as a clean table](/images/open-terminal-preview-csv.png)
+
+### Excel workbooks (XLSX, XLS)
+`.xlsx` and `.xls` files open as a table, one sheet at a time. A workbook with several sheets shows a picker to switch between them.
+
+An `.xlsx` file you can write to is editable in the preview. Double-click a cell or start typing to change it, or paste a range of cells. **Save** writes the workbook back to the file. Formula cells, table headers and protected sheets stay read-only. If the file changed on the terminal since you opened it, saving stops and asks you to reload it, and your edits stay in the editor.
+
+### Word documents (DOCX)
+`.docx` files are laid out by the terminal itself, using the same engine an office suite uses, and the preview shows the finished document. What you see is what the file prints: real pagination, headers, footers, footnotes and endnotes, embedded images, fonts and spacing.
+
+A numbered **thumbnail strip** of the pages runs alongside the document; click a page to jump to it. The page is scaled to fit the width of the panel. Holding **Ctrl** (**Cmd** on macOS) while scrolling zooms around the pointer.
+
+Where the terminal cannot lay the document out, the browser draws it instead and the preview says that it may differ from the download. That rendering keeps the text, tables and images without matching the exact layout. Only when that fails too does it report an error and suggest downloading the file instead.
+
+### Presentations (PPTX)
+`.pptx` files open in a **slide viewer**, one slide at a time. The terminal renders the deck the same way it renders Word documents, so each slide arrives as the finished thing: backgrounds, fills, fonts, spacing and the position every placeholder takes from the layout or master.
+
+A numbered **thumbnail strip** of the slides runs down the left side; click a thumbnail to jump to that slide. It is hidden on a narrow panel. Scrolling pans the slide; **Ctrl** (**Cmd** on macOS) and scroll zooms; once you are zoomed in you can drag the slide around.
+
+Where the terminal cannot render the deck, the browser draws an approximation of each slide instead and the preview says that it may differ from the download. That approximation draws single bar, line, pie and doughnut charts, negative values included. Stacked and combined charts and other chart types show **Chart preview unavailable**. Open the file in its own application when the exact rendering matters.
+
+### Markdown
+A Markdown file you can write to opens in a **rich text editor**: you edit the formatted text directly and **Save** writes it back as Markdown. Math, alerts and Mermaid diagrams show rendered; click one to edit its source. An image you paste or drop into the editor is uploaded to the terminal, into the folder of the Markdown file, and linked with a relative path. **Source** switches to the code editor for the raw Markdown, and **Editor** switches back.
+
+A read-only Markdown file shows a **rendered preview** that uses the same renderer as chat replies, so math, footnotes, highlighted code blocks, alerts and Mermaid diagrams all display. HTML blocks mixed into the Markdown render together with it, so `<details>` sections and wrappers like `<div align="center">` show their Markdown content formatted. A link to another file on the terminal opens that file in the browser.
+
+In both, images with a relative path load from the terminal.
+
+![Rendered markdown with headings, a table and a code block](/images/open-terminal-preview-markdown.png)
+
+### Comments in documents
+Word, Excel, PowerPoint and PDF previews show the comments stored in the file, with their replies, anchored where they sit in the document. Hover over a marker to read the thread, or tap it on a touch screen. Comments that have no place in the preview are collected behind a counter in the corner. If the comments cannot be read, the preview says **"Could not read comments. Download the original file to review them."**
+
+### Images
+Images display inline at a comfortable size.
+
+![File browser displaying an image preview](/images/open-terminal-file-browser-home.png)
+
+### 3D models
+
+`.glb`, `.gltf`, `.stl`, `.obj` and `.ply` files open in a 3D viewer. Drag to rotate and scroll to zoom; **Reset view** puts the model back in frame. Textures and material files load from paths relative to the model.
+
+### HTML
+
+HTML files render in a **sandboxed** iframe. Scripts and downloads work, but the page is given a unique origin of its own, so it cannot read cookies or `localStorage`, and same-origin requests back to Open WebUI fail.
+
+That isolation is the point: a previewed file is untrusted content, and giving it your origin would let it act as you. A page that needs same-origin behaviour will fail quietly rather than with an error, which is usually the explanation when a preview looks broken but the file is fine.
+
+If you understand the risk and need it, the per-user **Settings > Interface > iframe Sandbox Allow Same Origin** toggle grants it. It is **off by default** and applies to every embedded iframe, not just this preview. See [Rich UI](/features/extensibility/plugin/development/rich-ui#sandbox-and-security) for the full trade-off.
+
+---
+
+## Uploading files
+
+**Drag and drop** files or whole folders from your computer directly onto the file browser to upload them. A folder keeps its shape: every subfolder is recreated on the terminal. **Upload Folder**, in the toolbar and in the right-click menu, does the same through a picker. This is how you share data with the AI: drop a spreadsheet, a PDF, an image, or any file you want the AI to work with.
+
+![Files listed in the browser with their names and sizes](/images/open-terminal-file-browser-documents.png)
+
+:::tip Upload to any folder
+Navigate to the folder you want first, then drag and drop. The file uploads to whatever directory you're currently viewing.
+:::
+
+Uploading is switched off in a folder marked **Read-only**, and dropping files onto one does nothing.
+
+### From the chat input
+
+Files attached in the chat input normally go to Open WebUI, where their text is extracted for the model to read. With the connection's **Chat Uploads** set to `Filesystem`, they go to the terminal instead. Attachments then land in the chat's working folder (the terminal's default folder when none is set) and show up here like anything else. The model opens them with the terminal's own tools. See [Chat Uploads](/features/open-terminal/setup/connecting#chat-uploads).
+
+### Attaching terminal files to a message
+
+Drag files from the file browser onto the message input to attach them to your next message. A selection of several files goes in together. On a touch screen, long press a file, then drag it. The files stay on the terminal and the model gets their paths, the same as with **Chat Uploads** set to `Filesystem`. This needs the [Allow File Upload](/features/authentication-access/rbac/permissions#3-chat-permissions) permission, and all terminal files in one message must come from the same terminal.
+
+---
+
+## Comparing two files
+
+Select two files, with the checkboxes or `Ctrl`-click, and pick **Compare**. You can also pick **Select for Compare** in one file's menu and then **Compare with Selected** in the other's. The two are shown side by side with the differences marked.
+
+Text files open in a read-only compare view: step through the changes with the arrows, **Swap sides** switches which file is on the left and **Refresh** reads both files again. The **Comparison options** menu (**...**) has **Ignore whitespace**, **Ignore emphasis markers**, which skips changes that only add or remove `*` and `_`, and **Only show changes**, which folds long runs of unchanged lines. Changed lines are lined up by their matching text. This view takes UTF-8 text files up to 2 MiB each.
+
+Documents (PDF, Word, Excel, PowerPoint, OpenDocument and RTF files) are compared by the **text** extracted from them, so a Word file against a PDF, or yesterday's spreadsheet against today's, are all fair game.
+
+:::info Needs a recent Open Terminal
+Comparing documents runs on the terminal server. A terminal without it makes the browser say **"File comparison is not available on this terminal. Update Open Terminal to use Compare."** See [Updating](./setup/updating.mdx).
+:::
+
+## Downloading files
+
+Click the **download button** on any file to save it to your computer. This is how you get results back: after the AI generates a chart, creates a spreadsheet, processes an image, or writes a report, just download it.
+
+### Files shown in the chat message
+
+The AI can also put a file straight into its reply, rather than leaving you to find it in the browser. Ask for it to be shown in the chat and the message carries a small card with the file's name, a preview of its contents, and buttons to download it or open it in the file browser.
+
+The preview understands the same formats the browser does, so a spreadsheet arrives as a table, an image as a picture, a PDF as pages. The card reads the file from the terminal each time it is opened, using your own access, so nothing is copied out of the terminal and no public link to it exists. It follows that a card only works while the terminal it came from is connected and selected, and reports the terminal as unavailable otherwise.
+
+A long document can be opened at the part that matters. For a PDF, a Word document or a slide deck, the AI can name the page or slide it means, and the preview opens there rather than at the beginning. Ask for the page an answer came from and you get the document already scrolled to it, which saves hunting through a hundred pages for the paragraph the reply is quoting. The same applies when the file opens in the browser instead of in the message.
+
+![The AI quoting a cable rating and opening the manual at page 132](/images/open-terminal-display-file-manual-page.png)
+
+Here the AI searched a 150 page manual, quoted the specification it found, and opened the PDF at page 132 so the quote could be read in context.
+
+It works the same way when you do not know which file to look in. Asking which document covers something searches the folder first, then opens the match at the right page.
+
+![The AI locating the right document and opening it at the relevant page](/images/open-terminal-display-file-report-page.png)
+
+![A CSV and a generated chart shown as cards inside an assistant message](/images/open-terminal-inline-file-card.png)
+
+A presentation arrives the same way, with its slide rail, page controls and zoom, so a deck can be paged through without leaving the conversation.
+
+![A presentation rendered inline in the chat message](/images/open-terminal-display-file-deck-inline.png)
+
+The card header is a toggle, so a preview can be folded down to just the filename when it is taking up too much of the reply, and image and document previews carry a zoom control and a resize handle.
+
+By default the AI decides, and a file it shows opens in the file browser unless it asks for the card. **Settings > Interface > Terminal File Display** changes which one you get when the AI does not say: leave it on **Sidebar** for the browser, or set it to **Inline** to have files arrive in the message.
+
+![A Word report opened in the file viewer beside the chat](/images/open-terminal-display-file-report-viewer.png)
+
+---
+
+## Editing files
+
+Text and code files open straight in the code editor: type your changes and click **Save** or press `Ctrl+S` (`Cmd+S` on macOS). This is handy for quick fixes: editing a config value, correcting a typo, or tweaking something the AI generated. Files with a preview of their own, such as HTML, JSON or CSV, open the same editor with **Source**. [Markdown](#markdown) and [Excel](#excel-workbooks-xlsx-xls) files are edited in their preview.
+
+The editor suggests words that already appear in the file as you type; press `Tab` to accept one. In a Git repository, the line numbers carry a green mark next to added lines and an amber mark next to changed lines, compared with the last commit.
+
+![Editing a file directly in the file browser](/images/open-terminal-preview-code.png)
+
+If you leave a file with unsaved edits, for example by opening another file or folder, you are asked to **Save** or **Discard changes** first.
+
+---
+
+## Asking about a selection
+
+Select text in an open file and an **Ask or edit…** box appears next to it. Type a question or an instruction and press `Enter`. The request goes into the chat with the file attached and the selected text quoted, along with its page or sheet where there is one. The model works on the file in the same terminal, so it can answer about it or change it.
+
+You can select up to 16 KiB of text at once. If the file has unsaved edits, you are asked to **Save and send** first. A request sent while a reply is still running waits in the chat's queue and goes out when the reply finishes.
+
+---
+
+## Creating and deleting
+
+You can create new files and folders, or delete things you don't need anymore, directly from the file browser. A folder's menu also has **New File** and **New Folder**.
+
+![The Files tab with an image previewed](/images/open-terminal-file-browser-home.png)
+
+---
+
+## Read-only files and folders
+
+Some files and folders cannot be changed. The file browser marks them **Read-only** and greys out the actions that would fail, so you find out before you try rather than after.
+
+A folder you cannot write to is marked **Read-only** next to the breadcrumbs at the top. **New File**, **New Folder** and **Upload** are greyed out while you are in it, dropping files onto it does nothing, and nothing inside it can be renamed or deleted.
+
+A single file or folder you cannot change is marked **Read-only** next to its name. **Rename** and **Delete** are greyed out in its menu, it cannot be dragged into another folder and its preview cannot be edited. If you select several items at once, **Delete** stays greyed out when any one of them is read-only.
+
+Being read-only limits changes, nothing else. You can still browse, preview and download these files as usual.
+
+---
+
+## Working directory
+
+With a terminal selected, the **Working Directory** button (folder icon) next to it in the message input picks the folder the chat works in. You can change it at any time except while a reply is generating, in temporary chats too. With a terminal that has a separate instance per chat, the button appears once the chat is saved and temporary chats offer only the other terminals. Each chat saves its working folder and restores it when reopened. The menu has a search box, **No folder** for the terminal's own default, your **Recently Used** folders and **Open folder**, which opens a dialog to browse the terminal. In the dialog, **Use this directory** picks the folder you are in. The folder icon on a **Recently Used** row, also labelled **Open folder**, shows that folder in the Files tab.
+
+**Recently Used** lists your last eight folders on that terminal. They are stored as files on the terminal, under `.open-webui/users/<user id>/folders` in its home folder, so they follow you to other browsers. Anyone who can read that home folder can see them.
+
+### Cloning a repository
+
+When the terminal supports Git, the **Open folder** dialog and the folder picker in the [folder settings](/features/chat-conversations/chat-features/conversation-organization#default-terminal-and-working-directory) have **Clone repository**. Enter an HTTP(S) or SSH repository URL and it is cloned into a new folder named after the repository, inside the folder you are in, which then becomes the chosen folder. The clone runs `git clone` on the terminal, so the terminal needs Git, network access to the remote and, for a private repository, credentials already set up on the terminal. Git does not prompt for a password, and an SSH host must already be in the terminal's known hosts.
+
+---
+
+## Git
+
+The Git panel lets you review, commit and publish what the AI changed in a project, and, for GitHub repositories, work through issues and pull requests without leaving the chat. Use it when the AI works on a code project in your terminal: check its changes, commit them, then hand it the next issue in one click that fills the message input for you to review and send. Anyone who uses a terminal with a Git repository can use it.
+
+When the folder open in the file browser is inside a Git repository, a **Git** panel sits at the bottom of the Files tab. It needs tool servers turned on and an Open Terminal that supports Git. Click it to expand.
+
+- **Changes**: unified or split diffs and **Hide whitespace**. Stage, unstage or discard files, commit with a summary and description, and **Undo last commit**.
+  **Discard changes** works for staged, unstaged and new files. Pick several changed files with **Ctrl** or **Shift**-click (**Cmd** on macOS) to discard them together, or use **Discard all changes** in the Changes menu. It drops all changes to a file after a confirmation, and deletes a file that is not in the last commit.
+- **History**: past commits and their diffs.
+- **Issues**, for GitHub repositories when the terminal supports them: search, filter by **Open**, **Closed** or **All**, create, edit, comment, close as completed or not planned and reopen.
+- **Pull requests**, for GitHub repositories when the terminal supports them: search, filter by **Open**, **Closed**, **Merged** or **All**, create, edit, comment, approve, request changes, close, reopen, check out, update the branch and mark ready. A pull request has **Summary**, **Code**, **Checks** and **Activity** views and shows whether it has conflicts. The merge button has a **Merge method** menu with **Squash and merge**, **Create a merge commit** and **Rebase and merge**.
+
+**Work on this** on an issue, **Fix** on a failing check, **Address feedback** on a pull request and **Resolve conflicts in chat** on a conflicting one write a request into the message input. **Add to chat** on a comment or review (in a pull request's **Activity** or on an issue) writes that comment's text there. Review it and send it to hand the work to the AI.
+
+The branch menu switches, creates, renames and deletes branches and manages worktrees. The sync button publishes, pulls, pushes or fetches, whichever the branch needs. Staging, pushing, pulling and fetching show their progress. Drag the divider next to the file list to resize it. A file with changes gets **Show diff** in the file browser toolbar.
+
+The file list marks changes too. A changed file is colored by its status and shows how many lines were added and removed. A changed binary file shows a status letter such as `M` (modified) or `U` (untracked).
+
+---
+
+## Good to know
+
+:::tip Files update automatically
+When the AI creates or changes files, the file browser refreshes automatically. You don't need to manually reload.
+:::
+
+:::tip Remembers where you were
+Switching chats opens the Files tab at that chat's working folder. Picking another terminal moves the Files tab to that terminal's working folder.
+:::
+
+:::tip Live updates
+On a terminal server that reports live events, the Git panel and the **Ports** list of the [Browser tab](./use-cases/web-development.md#the-browser-tab) update live, and so does the **Files** tab: the folders it shows refresh in the background without a loading spinner, including after commands run outside the chat. The Files tab pauses this while a file is open in it. Otherwise the Git panel refreshes when expanded and the **Ports** list has a **Refresh** button.
+:::
+
+:::tip The terminal sits below it
+The bottom of the **Files** tab holds the [terminal pane](./terminal-pane.md), with a tab per command the AI runs.
+:::
+
+:::tip Multiple terminals
+If you have more than one terminal connected, switching between them in the dropdown updates the file browser to show that terminal's files.
+:::
+
+:::info Terminals that give each chat its own files
+A terminal can give every conversation an instance of its own, so each chat has its own files. Such a terminal needs the conversation to exist first: the file browser appears once you have sent the first message, and a new chat lists such a terminal but its files and details open once the chat is saved. Temporary chats do not list it. To browse a terminal's files without selecting it, use **View files** in its **More** menu. See [Creating Terminals](/features/open-terminal/terminals/orchestration/creating-terminals).
+:::
+
+## More things to try
+
+- **[Analyze documents & data →](./use-cases/file-analysis.md)**: drag in a spreadsheet or PDF and ask about it
+- **[Run code from chat →](./use-cases/code-execution.md)**: the AI creates files you can see here
+- **[Build & preview websites →](./use-cases/web-development.md)**: the files the AI creates appear in the browser

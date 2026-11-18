@@ -1,0 +1,169 @@
+---
+sidebar_position: 2
+title: "Environment Variables"
+---
+
+## Environment Variables List
+
+:::info
+
+For a complete list of all Open WebUI environment variables, see the [Environment Variable Configuration](https://docs.openwebui.com/reference/env-configuration) page.
+
+:::
+
+The following is a summary of the environment variables for speech to text (STT) and text to speech (TTS).
+
+:::tip UI Configuration
+Most of these settings can also be configured in the **Settings → Audio** (admin section) tab. Environment variables take precedence on startup but can be overridden in the UI.
+:::
+
+## Speech To Text (STT) Environment Variables
+
+### Preprocessing
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `BYPASS_PYDUB_PREPROCESSING` | Skip pydub-based preprocessing (MP3 conversion, compression, chunk splitting) before sending audio to the STT engine. Applies to all engines. Useful when the upstream provider already handles these steps, or when ffmpeg is unavailable on the host. | `false` (always `true` on the slim image) |
+
+### Local Whisper
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `WHISPER_MODEL` | Whisper model size | `base` |
+| `WHISPER_MODEL_DIR` | Directory to store Whisper model files | `{CACHE_DIR}/whisper/models` |
+| `WHISPER_COMPUTE_TYPE` | Compute type for inference (see note below) | `int8` |
+| `WHISPER_LANGUAGE` | ISO 639-1 language code (empty = auto-detect) | empty |
+| `WHISPER_MULTILINGUAL` | Use the multilingual Whisper model | `false` |
+| `WHISPER_MODEL_AUTO_UPDATE` | Auto-download model updates | `false` |
+| `WHISPER_VAD_FILTER` | Enable Voice Activity Detection filter | `false` |
+
+:::info WHISPER_COMPUTE_TYPE Options
+- `int8`: CPU default, fastest but may not work on older GPUs
+- `float16`: **Recommended for CUDA/GPU**
+- `int8_float16`: Hybrid mode (int8 weights, float16 computation)
+- `float32`: Maximum compatibility, slowest
+
+If using the `:cuda` Docker image with an older GPU, set `WHISPER_COMPUTE_TYPE=float16` to avoid errors.
+:::
+
+### OpenAI-Compatible STT
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `AUDIO_STT_ENGINE` | STT engine: empty (local Whisper), `openai`, `azure`, `deepgram`, `mistral` | empty |
+| `AUDIO_STT_MODEL` | STT model for external providers | empty |
+| `AUDIO_STT_OPENAI_API_BASE_URL` | OpenAI-compatible API base URL | `https://api.openai.com/v1` |
+| `AUDIO_STT_OPENAI_API_KEY` | OpenAI API key | empty |
+| `AUDIO_STT_SUPPORTED_CONTENT_TYPES` | Comma-separated list of supported audio MIME types | empty |
+
+### Azure STT
+
+See the [Azure AI Speech STT guide](/features/chat-conversations/audio/speech-to-text/azure-stt-integration) for setup.
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `AUDIO_STT_AZURE_API_KEY` | Azure Cognitive Services API key | empty |
+| `AUDIO_STT_AZURE_REGION` | Azure region | empty, which uses `eastus` |
+| `AUDIO_STT_AZURE_LOCALES` | Comma-separated locales, no spaces (e.g., `en-US,de-DE`) | empty, which sends a built-in list of 13 locales |
+| `AUDIO_STT_AZURE_BASE_URL` | Custom Azure base URL (optional) | empty |
+| `AUDIO_STT_AZURE_MAX_SPEAKERS` | Max speakers for diarization | empty, which uses `3` |
+
+### Deepgram STT
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `DEEPGRAM_API_KEY` | Deepgram API key | empty |
+
+### Mistral STT
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `AUDIO_STT_MISTRAL_API_KEY` | Mistral API key | empty |
+| `AUDIO_STT_MISTRAL_API_BASE_URL` | Mistral API base URL | `https://api.mistral.ai/v1` |
+| `AUDIO_STT_MISTRAL_USE_CHAT_COMPLETIONS` | Use chat completions endpoint | `false` |
+
+## Text To Speech (TTS) Environment Variables
+
+### General TTS
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `AUDIO_TTS_ENGINE` | TTS engine: empty (disabled), `openai`, `openai-realtime`, `mistral`, `elevenlabs`, `azure`, `transformers` | empty |
+| `AUDIO_TTS_MODEL` | TTS model | `tts-1` |
+| `AUDIO_TTS_VOICE` | Default voice | `alloy` |
+| `AUDIO_TTS_SPLIT_ON` | Split text on: `punctuation`, `paragraphs`, or `none` | `punctuation` |
+| `AUDIO_TTS_API_KEY` | API key for ElevenLabs or Azure TTS | empty |
+
+### OpenAI-Compatible TTS
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `AUDIO_TTS_OPENAI_API_BASE_URL` | OpenAI-compatible TTS API base URL | `https://api.openai.com/v1` |
+| `AUDIO_TTS_OPENAI_API_KEY` | OpenAI TTS API key | empty |
+| `AUDIO_TTS_OPENAI_PARAMS` | Additional JSON params for OpenAI TTS | empty |
+| `REALTIME_TTS_PROMPT_TEMPLATE` | Instructions for the model when `AUDIO_TTS_ENGINE` is `openai-realtime` | empty (built-in prompt) |
+
+### Mistral TTS
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `AUDIO_TTS_MISTRAL_API_KEY` | Mistral TTS API key | empty |
+| `AUDIO_TTS_MISTRAL_API_BASE_URL` | Mistral API base URL | `https://api.mistral.ai/v1` |
+
+:::info
+When `AUDIO_TTS_ENGINE=mistral`, Open WebUI uses `voxtral-mini-tts-2603` when `AUDIO_TTS_MODEL` is empty.
+:::
+
+### Azure TTS
+
+See the [Azure AI Speech TTS guide](/features/chat-conversations/audio/text-to-speech/azure-tts-integration) for setup.
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `AUDIO_TTS_AZURE_SPEECH_REGION` | Azure Speech region | empty (speech uses `eastus`; without a base URL, the voice list does not load) |
+| `AUDIO_TTS_AZURE_SPEECH_BASE_URL` | Custom Azure Speech base URL (optional) | empty |
+| `AUDIO_TTS_AZURE_SPEECH_OUTPUT_FORMAT` | Audio output format | `audio-24khz-160kbitrate-mono-mp3` |
+
+## Realtime Voice Calls Environment Variables
+
+These configure **Realtime** call mode for [Voice Mode](/features/chat-conversations/chat-features/voice-mode#realtime-calls). See [Realtime Voice Calls](/reference/env-configuration#realtime-voice-calls) in the environment variable reference for details.
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| [`AUDIO_REALTIME_ENABLED`](/reference/env-configuration#audio_realtime_enabled) | Call mode: `true` for **Realtime**, `false` for **Standard** | `false` |
+| [`AUDIO_REALTIME_PROVIDER`](/reference/env-configuration#audio_realtime_provider) | Provider: `openai` for OpenAI or a compatible server, `azure` for Azure OpenAI | `openai` |
+| [`AUDIO_REALTIME_AUTH_TYPE`](/reference/env-configuration#audio_realtime_auth_type) | Authentication: `api_key`, or `microsoft_entra_id` with the Azure provider | `api_key` |
+| [`AUDIO_REALTIME_OPENAI_API_BASE_URL`](/reference/env-configuration#audio_realtime_openai_api_base_url) | Realtime API base URL, or the Azure endpoint followed by `/openai/v1` | `https://api.openai.com/v1` |
+| [`AUDIO_REALTIME_OPENAI_API_KEY`](/reference/env-configuration#audio_realtime_openai_api_key) | Realtime API key | empty |
+| [`AUDIO_REALTIME_MODEL`](/reference/env-configuration#audio_realtime_model) | Realtime voice model, or the deployment name on Azure | `gpt-realtime-2.1-mini` |
+| [`AUDIO_REALTIME_VOICE`](/reference/env-configuration#audio_realtime_voice) | Default voice of the voice model | `marin` |
+| [`AUDIO_REALTIME_TRANSCRIPTION_MODEL`](/reference/env-configuration#audio_realtime_transcription_model) | Model that transcribes what the user says | `gpt-transcribe` |
+| [`AUDIO_REALTIME_INPUT_PARAMS`](/reference/env-configuration#audio_realtime_input_params) | Extra audio input settings as a JSON object, such as noise reduction | empty |
+| [`REALTIME_CALL_PROMPT_TEMPLATE`](/reference/env-configuration#realtime_call_prompt_template) | Instructions for the voice model | empty (built-in prompt) |
+
+## Tips for Configuring Audio
+
+### Using Local Whisper STT
+
+For GPU acceleration issues or older GPUs, try setting:
+```yaml
+environment:
+  - WHISPER_COMPUTE_TYPE=float16
+```
+
+### Using External TTS Services
+
+When running Open WebUI in Docker with an external TTS service:
+
+```yaml
+environment:
+  - AUDIO_TTS_ENGINE=openai
+  - AUDIO_TTS_OPENAI_API_BASE_URL=http://host.docker.internal:5050/v1
+  - AUDIO_TTS_OPENAI_API_KEY=your-api-key
+```
+
+:::tip
+Use `host.docker.internal` on Docker Desktop (Windows/Mac) to access services on the host. On Linux, use the host IP or container networking.
+:::
+
+For troubleshooting audio issues, see the [Audio Troubleshooting Guide](/troubleshooting/audio).

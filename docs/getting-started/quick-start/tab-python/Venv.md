@@ -1,9 +1,8 @@
-
-# Using Virtual Environments
+## Using Virtual Environments
 
 Create isolated Python environments using `venv`.
 
-## Steps
+### Venv Steps
 
 1. **Create a Virtual Environment:**
 
@@ -36,3 +35,25 @@ Create isolated Python environments using `venv`.
    ```bash
    open-webui serve
    ```
+
+:::tip 'open-webui: command not found'?
+If your terminal says the command doesn't exist:
+1. Ensure your virtual environment is **activated** (Step 2).
+2. If you want to store your data in a specific place, use: `DATA_DIR=./data open-webui serve`
+:::
+
+### Uninstall
+
+1.  **Delete the Virtual Environment:**
+    Simply remove the `venv` folder:
+    ```bash
+    rm -rf venv
+    ```
+
+2.  **Remove Data (WARNING: Deletes all data):**
+    Without `DATA_DIR`, the data directory sits inside the venv (`.../site-packages/open_webui/data`), so removing the `venv` folder above already deletes it. If you set `DATA_DIR`, delete that directory:
+    ```bash
+    rm -rf ~/.open-webui
+    ```
+
+---

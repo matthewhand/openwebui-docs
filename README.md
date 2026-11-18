@@ -1,41 +1,14 @@
-# Website
+# Open WebUI Documentation
 
-This website is built using [Docusaurus](https://docusaurus.io/), a modern static website generator.
+Source for [docs.openwebui.com](https://docs.openwebui.com/), built with Docusaurus.
 
-## Installation
+Use the Node.js version in [.node-version](.node-version), then run:
 
-```sh
+```bash
 npm ci
-```
-
-## Local Development
-
-```sh
 npm start
 ```
 
-This command starts a local development server and opens up a browser window. Most changes are reflected live without having to restart the server.
+Edit pages in `docs/`. Run `npm run build` to check the production build before submitting a pull request.
 
-## Build
-
-```sh
-npm run build
-```
-
-This command generates static content into the `build` directory and can be served using any static contents hosting service.
-
-## Deployment
-
-Using SSH:
-
-```sh
-USE_SSH=true npm run deploy
-```
-
-Not using SSH:
-
-```sh
-GIT_USER=<Your GitHub username> npm run deploy
-```
-
-If you are using GitHub pages for hosting, this command is a convenient way to build the website and push to the `gh-pages` branch.
+See the [contributing guide](docs/tutorials/contributing-tutorial.md) for more details.

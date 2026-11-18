@@ -1,91 +1,232 @@
-# Manual Docker Setup
-
-If you prefer to set up Docker manually, follow these steps for Open WebUI.
-
-## Step 1: Pull the Open WebUI Image
-
-Start by pulling the latest Open WebUI Docker image from the GitHub Container Registry.
+Requires [Docker](https://docs.docker.com/get-docker/). Replace `your-secret-key` with the output of `openssl rand -hex 32`, then run the command below; it pulls the image and starts it:
 
 ```bash
-docker pull ghcr.io/open-webui/open-webui:main
+docker run -d -p 3000:8080 --add-host=host.docker.internal:host-gateway -v open-webui:/app/backend/data -e WEBUI_SECRET_KEY=your-secret-key --name open-webui --restart always ghcr.io/open-webui/open-webui:main
 ```
 
-## Step 2: Run the Container
+| Flag | What it does |
+|---|---|
+| `-p 3000:8080` | The UI is on port 3000 of your machine. Change the left number if 3000 is taken. |
+| `-v open-webui:/app/backend/data` | Your chats, users and settings live in this volume. It survives updates; never run without it. |
+| `--add-host=host.docker.internal:host-gateway` | Lets the container reach Ollama, or anything else, running on your machine. |
+| `--restart always` | Comes back after a reboot. |
+| `-e WEBUI_SECRET_KEY=your-secret-key` | Set it once and keep it. Without a fixed key, every recreated container logs everyone out. Generate one with `openssl rand -hex 32`. |
 
-Run the container with default settings. This command includes a volume mapping to ensure persistent data storage.
+
+
+## Image Variants
+
+| Tag | Use case |
+|-----|----------|
+| `:main` | Standard image (recommended). Everything included: the app plus the bundled speech-to-text and embedding models. |
+| `:dev` | Pre-release (nightly) build from the `dev` branch. Fixes and features arrive here first. See [Using the Dev Branch](#using-the-dev-branch). |
+| `:slim`, `:main-slim` | About **197 MB instead of 1.62 GB** to download, **88% smaller** on Linux/amd64. Same chat experience with your model provider. See [Why choose slim?](#what-slim-leaves-out) |
+| `:cuda` | Nvidia GPU support, CUDA 12.8 (add `--gpus all` to `docker run`) |
+| `:cuda126` | Same as `:cuda`, built against CUDA 12.6 |
+| `:ollama` | Bundles Ollama inside the container for an all-in-one setup |
+
+Each variant also has a development build: `:dev-slim`, `:dev-cuda`, `:dev-cuda126` and `:dev-ollama`. The short tags `:slim`, `:cuda`, `:cuda126` and `:ollama` follow `main`. Choose one variant; slim does not combine with CUDA or bundled Ollama.
+
+### Why choose slim? {#what-slim-leaves-out}
+
+**197 MB instead of 1.62 GB. Same chat experience.** The `:slim` image is **88% smaller** than `:main`, saving about **1.42 GB on a fresh pull**. That means less time downloading Open WebUI when you set up a machine or deploy a new instance. Use it with a hosted API, your own model server, or a separate Ollama instance, even one on the same machine.
+
+These are compressed download sizes for Linux/amd64, checked on October 16, 2026. Sizes vary by build and architecture. `:slim` and `:main-slim` are two tags for the same image.
+
+<!-- Verified from GHCR manifest layer sizes on October 16, 2026. main linux/amd64: sha256:d90e4762f94cae56e74d329a176f0dc76c6460ee7cb01ad6e4b91a503aa70d66 = 1,620,712,040 bytes; slim linux/amd64: sha256:c5645947013018ed78b0740ccdb29a01a673dbfd815ac168c641d9a80427ca9f = 197,296,335 bytes. -->
+
+The saving comes from leaving out the bundled machine-learning stack, including PyTorch, local embedding and speech runtimes, plus document-processing tools and optional database and storage clients. If you use Open WebUI to chat with models through an API, those dependencies would otherwise sit unused in your container.
+
+**To get started, change `:main` to `:slim` in the Docker command above.** The default SQLite database and local file storage work as usual. Connect your model provider and start chatting; no extra services are needed for a basic chat setup.
+
+For knowledge search, document extraction or voice, slim connects to services that do that work. It is a good fit if you already use those services or only need chat. Choose the standard image if you want Open WebUI to handle embeddings, speech recognition and document extraction inside its own container. The table below covers the setup for each feature.
+
+#### RAM usage {#slim-memory-usage}
+
+Slim used **about 300 MiB of RAM at idle** in our October 16, 2026 test of Open WebUI 0.12.3 on Linux/arm64 in Docker Desktop. This is the Open WebUI container alone; your browser, Docker's VM and any model server or external services need their own memory. Allow extra memory for startup and active workloads: this idle measurement is not a minimum RAM requirement or a container memory limit.
+
+<details>
+<summary>How we measured</summary>
+
+We ran three fresh containers with the default SQLite database and one Uvicorn worker, with no configured provider, users, chats, uploads or plugins. Each run used a new data directory and no memory limit. Docker's Linux VM had 16 CPUs and 7.65 GiB RAM available; other containers remained running.
+
+After `/health` returned HTTP 200, we waited 30 seconds, then took 12 readings with five seconds between calls:
 
 ```bash
-docker run -d -p 3000:8080 -v open-webui:/app/backend/data --name open-webui ghcr.io/open-webui/open-webui:main
+docker stats --no-stream --format '{{.MemUsage}}' <container-name>
 ```
 
-### Important Flags
-- **Volume Mapping (`-v open-webui:/app/backend/data`)**: Ensures persistent storage of your data. This prevents data loss between container restarts.
-- **Port Mapping (`-p 3000:8080`)**: Exposes the WebUI on port 3000 of your local machine.
+Across all 36 samples, memory usage ranged from **291.8 to 292.6 MiB**, with a median of **292.2 MiB**.
 
-### Using GPU Support
-For Nvidia GPU support, add `--gpus all` to the `docker run` command:
+On Linux, [Docker's reported memory usage](https://docs.docker.com/reference/cli/docker/container/stats/) excludes inactive file cache. These samples cover an idle instance, not model inference or concurrent chat traffic. Results vary with version, architecture, configuration and workload.
+
+The pinned image was `ghcr.io/open-webui/open-webui@sha256:abd02d41e522d41be389d28d1a73752cd2afc4aa46f980b60d490ecc9379c16b` (Linux/arm64, commit `91ea4e3421d1d8069f13d4a463fcb5986d94ea60`).
+
+</details>
+
+#### Moving an existing deployment to slim
+
+Check your database and file storage before switching:
+
+- **Database:** SQLite and PostgreSQL work on slim, the two databases Open WebUI supports. AWS RDS IAM authentication for PostgreSQL requires the standard image.
+- **File storage:** Local files and S3 (`STORAGE_PROVIDER=s3`) are supported. Azure Blob and Google Cloud Storage require the standard image.
+
+Slim checks these settings at startup and reports an error for unsupported configurations. Default installs already use SQLite and local files.
+
+#### What each feature needs
+
+| If you want | Point slim at | Otherwise |
+|---|---|---|
+| **Documents, knowledge or RAG** | An embedding provider: `RAG_EMBEDDING_ENGINE` set to `ollama`, `openai` or `azure_openai` | Embedding calls fail with 503, and the admin panel refuses to save the local engine |
+| | PostgreSQL with pgvector, slim's default and only vector store. It uses `DATABASE_URL` when that points at PostgreSQL; otherwise set `PGVECTOR_DB_URL` | 503 the first time retrieval runs. Nothing else is affected, the store is only opened when it is used |
+| **PDFs and Office files** | Tika, Docling, an external extractor or a cloud engine | Uploading one returns 503. Plain text formats are still read by slim itself |
+| **Voice input** | Any external speech-to-text engine: OpenAI, Deepgram, Azure, Mistral and so on | Local Whisper is not offered, and the admin panel refuses to select it |
+| **Spoken replies** | Any external text-to-speech engine | The local Transformers voice is not offered, and requesting speech returns 503 |
+| **Web search** | Any provider other than DDGS | DDGS is greyed out in the admin panel and refused on save |
+| **Reranking** | An external reranker | Selecting a local reranking model is refused |
+| **Code interpreter** | Nothing, but the browser fetches the Python packages from `cdn.jsdelivr.net` rather than from your instance | Running code fails where the browser cannot reach that CDN |
+
+Also unavailable: the **Playwright** web loader, so pages are fetched over plain HTTP or by an external web loader, and the **Transformers** text splitter, so use the character or the tiktoken token splitter. Slim carries no `git` either, so a tool or function whose requirements install straight from a repository needs the standard image.
+
+If you use Open WebUI as a chat front end for hosted models, none of the above applies and slim is simply the smaller image.
+
+#### What still works without a service
+
+- **Plain text extraction.** `csv`, `html`, `txt`, `md`, `markdown`, `rst`, `xml` and anything else detected as text are read by slim itself.
+- **Reranking, in a fashion.** Leave the reranking model empty and results are scored by cosine similarity against the embeddings you already have, which needs no model runtime.
+- **Audio passthrough.** Speech from an external provider is served in the format that provider returned, since slim cannot transcode. A provider that answers with something a browser cannot play is rejected rather than stored.
+
+#### Building it yourself
+
+The standard and slim images install every Python package except PyTorch and its companion packages from the hash-pinned lock files `backend/requirements.lock` and `backend/requirements-slim.lock`. A custom image that edits `backend/requirements.txt` or `backend/requirements-slim.txt` must run `backend/update-locks.sh` (needs [uv](https://docs.astral.sh/uv/)) to regenerate the locks, or the edit has no effect.
+
+`USE_SLIM=true` cannot be combined with `USE_CUDA=true` or `USE_OLLAMA=true`. The build stops with an error rather than producing an image whose GPU support or bundled model server has nothing to run.
+
+#### Offline and air-gapped
+
+Slim never downloads a model, because it cannot run one, and an air-gapped deployment otherwise only has to reach whichever services it uses on your own network. `OFFLINE_MODE=true` still blocks the Hugging Face traffic and the version check.
+
+Two features reach the internet on first use. The **token text splitter** downloads its tiktoken encoding, so offline instances should use the character splitter. The **code interpreter** has the browser pull its Python packages from `cdn.jsdelivr.net`, because slim ships only the Pyodide runtime while the standard image bundles them. Air-gapped instances should leave the code interpreter off, or use the standard image.
+
+### How the tags update
+
+`:main` and `:latest` are the **same rolling image**: both point to the newest build from the `main` branch and are rebuilt every time a change lands there, so their digest moves forward as development continues. Note that `:latest` follows `main`; it does **not** point to the newest stable release.
+
+`:dev` is the same idea for the `dev` branch, also rolling. That is the pre-release, effectively a nightly build, and it carries fixes and features weeks before they appear under `:main`.
+
+Version tags, such as `:vX.Y.Z` and the shorter `:X.Y.Z`, are **pinned** to one stable release and never change. `:X.Y` follows the newest patch release of that minor line. `:git-<short-sha>` pins one exact commit.
+
+This is why `:main` and a specific release tag can show different image digests at the same time: `:main` already includes everything merged since that release, while the version tag stays frozen at it.
+
+| Tag | Points to | Immutable? |
+| :--- | :--- | :--- |
+| `:main`, `:latest` | Newest build of the `main` branch | No (rolling) |
+| `:dev` | Newest build of the `dev` branch, the pre-release | No (rolling) |
+| `:vX.Y.Z`, `:X.Y.Z` | A specific stable release | Yes |
+| `:X.Y` | The newest patch release of that minor line | No (rolling within the minor) |
+| `:git-<sha>` | One exact commit | Yes |
+
+For reproducible or production deployments, pin a version tag. For the newest build, use `:main` (or the identical `:latest`). For the next release before it is released, use `:dev`.
+
+### Specific release versions
+
+For production environments, pin a specific version instead of using floating tags. Replace `X.Y.Z` with a version from the [releases page](https://github.com/open-webui/open-webui/releases):
 
 ```bash
-docker run -d -p 3000:8080 --gpus all -v open-webui:/app/backend/data --name open-webui ghcr.io/open-webui/open-webui:cuda
+docker pull ghcr.io/open-webui/open-webui:vX.Y.Z
+docker pull ghcr.io/open-webui/open-webui:vX.Y.Z-slim
+docker pull ghcr.io/open-webui/open-webui:vX.Y.Z-cuda
+docker pull ghcr.io/open-webui/open-webui:vX.Y.Z-ollama
 ```
 
-## User Roles and Privacy
-
-:::info **Important Note on User Roles and Privacy:**
-
-- **Admin Creation**: The first account created on Open WebUI will have **Administrator privileges**, managing user access and system settings.
-- **User Registrations**: Additional accounts start with a **Pending** status, requiring Administrator approval for access.
-- **Data Security**: **All your data** is stored locally on your device, ensuring **privacy** and **no external requests**. Open WebUI does not transmit data externally by default.
-
+:::info Docker Hub
+The same images are mirrored to Docker Hub as `openwebui/open-webui`, but only a subset: `latest`, `latest-<variant>` and the bare `<variant>` tags (for example `slim`, `cuda`, `ollama`) follow `main`, and `X.Y.Z` / `X.Y`, with or without a variant suffix, follow releases. `:main`, `:dev`, `:vX.Y.Z` and `:git-<sha>` exist on ghcr.io only, which is why every command in these docs uses `ghcr.io/open-webui/open-webui`.
 :::
 
-## Single-User Mode (Disabling Login)
+---
 
-To bypass the login page for a single-user setup, set the `WEBUI_AUTH` environment variable to `False`:
+## Common Configurations
+
+### GPU support (Nvidia)
 
 ```bash
-docker run -d -p 3000:8080 -e WEBUI_AUTH=False -v open-webui:/app/backend/data --name open-webui ghcr.io/open-webui/open-webui:main
+docker run -d -p 3000:8080 --gpus all --add-host=host.docker.internal:host-gateway -v open-webui:/app/backend/data -e WEBUI_SECRET_KEY=your-secret-key --name open-webui --restart always ghcr.io/open-webui/open-webui:cuda
+```
+
+### Bundled with Ollama
+
+A single container with Open WebUI and Ollama together:
+
+**With GPU:**
+```bash
+docker run -d -p 3000:8080 --gpus=all -v ollama:/root/.ollama -v open-webui:/app/backend/data -e WEBUI_SECRET_KEY=your-secret-key --name open-webui --restart always ghcr.io/open-webui/open-webui:ollama
+```
+
+**CPU only:**
+```bash
+docker run -d -p 3000:8080 -v ollama:/root/.ollama -v open-webui:/app/backend/data -e WEBUI_SECRET_KEY=your-secret-key --name open-webui --restart always ghcr.io/open-webui/open-webui:ollama
+```
+
+### Connecting to Ollama on a different server
+
+```bash
+docker run -d -p 3000:8080 -e OLLAMA_BASE_URL=https://example.com -v open-webui:/app/backend/data -e WEBUI_SECRET_KEY=your-secret-key --name open-webui --restart always ghcr.io/open-webui/open-webui:main
+```
+
+### Single-user mode (no login)
+
+```bash
+docker run -d -p 3000:8080 --add-host=host.docker.internal:host-gateway -e WEBUI_AUTH=False -v open-webui:/app/backend/data -e WEBUI_SECRET_KEY=your-secret-key --name open-webui --restart always ghcr.io/open-webui/open-webui:main
 ```
 
 :::warning
 You cannot switch between single-user mode and multi-account mode after this change.
 :::
 
-## Quick Start with Docker 🐳
+---
 
-### Essential Docker Command Options
+## Using the Dev Branch
 
-For Docker installation, consider the following options:
+`:dev` is Open WebUI's pre-release channel, and in practice a nightly build: the image is rebuilt from the `dev` branch as changes land, and every change lands there before it lands anywhere else. There is no separate beta programme, because `dev` fills that role. Changes that reach it are not reverted, so the next release is `dev` as it stands on release day.
 
-- **Persistent Storage**: Use the `-v open-webui:/app/backend/data` option to ensure all application data remains available across sessions.
-- **Exposing Ports**: Use the `-p` flag to map internal container ports to your system.
+That has two consequences worth knowing:
 
-For example, if you're installing Open WebUI with data persistence and local-only port exposure, the command would be:
+- **If you are waiting on a fix, it is probably already available.** Check the [changelog](https://github.com/open-webui/open-webui/blob/dev/CHANGELOG.md) on `dev`, then run `:dev` rather than waiting for the release.
+- **If you run Open WebUI for other people, testing the pre-release is how you avoid surprises.** A second instance on `:dev` shows you the next release before your users meet it, and tells you whether your plugins, your models and your configuration still behave.
 
-```bash
-docker run -d -p 127.0.0.1:3000:8080 -v open-webui:/app/backend/data --name open-webui --restart always ghcr.io/open-webui/open-webui:main
-```
+Whether to run it is entirely your decision, and running it is what makes releases good. A pre-release is only as well tested as the number of people who choose to install it, and that number is currently small.
 
-### Advanced Configuration: Connecting to Ollama on a Different Server
-
-To connect Open WebUI to an Ollama server located on another host, add the `OLLAMA_BASE_URL` environment variable:
+Setup is the same as any other image, with the tag changed:
 
 ```bash
-docker run -d -p 3000:8080 -e OLLAMA_BASE_URL=https://example.com -v open-webui:/app/backend/data --name open-webui --restart always ghcr.io/open-webui/open-webui:main
+docker run -d -p 3001:8080 --add-host=host.docker.internal:host-gateway -v open-webui-dev:/app/backend/data -e WEBUI_SECRET_KEY=your-secret-key --name open-webui-dev --restart always ghcr.io/open-webui/open-webui:dev
 ```
 
-### GPU Support with Nvidia
+:::warning Use a separate volume
+**Never share a data volume between dev and production.** Dev builds may include database migrations that a release image cannot read back, so a shared volume can leave you unable to go back to `:main`. The `-v open-webui-dev:/app/backend/data` above is a different volume from the `open-webui` one used on the Quick Start, and that is deliberate. The container name differs too, so both can run at once.
+:::
 
-For running Open WebUI with Nvidia GPU support, use:
+Anything that looks wrong on `:dev` is worth reporting on [GitHub](https://github.com/open-webui/open-webui/issues). Reports at that stage get fixed before the release instead of after it, which is the whole point of a pre-release existing.
 
-```bash
-docker run -d -p 3000:8080 --gpus all -v open-webui:/app/backend/data --name open-webui --restart always ghcr.io/open-webui/open-webui:cuda
-```
+If Docker is not your preference, follow the [Developing Open WebUI](/getting-started/advanced-topics/development).
 
-## Access the WebUI
+---
 
-After the container is running, access Open WebUI at:
+## Uninstall
 
-[http://localhost:3000](http://localhost:3000)
+### With docker run
 
-For detailed help on each Docker flag, see [Docker's documentation](https://docs.docker.com/engine/reference/commandline/run/).
+1. **Stop and remove the container:**
+    ```bash
+    docker rm -f open-webui
+    ```
+
+2. **Remove the image (optional):**
+    ```bash
+    docker rmi ghcr.io/open-webui/open-webui:main
+    ```
+
+3. **Remove the volume (optional, deletes all data):**
+    ```bash
+    docker volume rm open-webui
+    ```

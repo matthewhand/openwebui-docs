@@ -1,59 +1,501 @@
 ---
-sidebar_position: 16
+sidebar_position: 2
 title: "Models"
+sidebar_label: "Models"
 ---
 
-**Models**
-=======================
+import ThemedImage from '@theme/ThemedImage';
+import useBaseUrl from '@docusaurus/useBaseUrl';
 
-The `Models` section of the `Workspace` within Open WebUI is a powerful tool that allows you to create and manage custom models tailored to specific purposes. This section serves as a central hub for all your modelfiles, providing a range of features to edit, clone, share, export, and hide your models.
+# Models
 
-### Modelfile Management
+<ThemedImage
+  alt="Workspace Models: a row of blocks, one raised"
+  sources={{
+    light: useBaseUrl('/images/banners/workspace-models-light.svg'),
+    dark: useBaseUrl('/images/banners/workspace-models-dark.svg'),
+  }}
+  style={{ width: '100%', margin: '0.25rem 0 1.75rem' }}
+/>
 
-From the `Models` section, you can perform the following actions on your modelfiles:
+**Wrap any model with custom instructions, tools, and knowledge to build specialized agents.**
 
-* **Edit**: Dive into the details of your modelfile and make changes to its character and more.
-* **Clone**: Create a copy of a modelfile, which will be appended with `-clone` to the cloned `Model ID`. Note that you cannot clone a base model; you must create a model first before cloning it.
-* **Share**: Share your modelfile with the Open WebUI community by clicking the `Share` button, which will redirect you to [https://openwebui.com/models/create](https://openwebui.com/models/create).
-* **Export**: Download the modelfile's `.json` export to your PC.
-* **Hide**: Hide the modelfile from the model selector dropdown within chats.
+The Models workspace lets you create configuration presets that sit on top of any base model. Pick GPT-5.6, Claude, Qwen 3.6, or anything else connected to Open WebUI, then bind a system prompt, knowledge bases, tools, skills, and parameter overrides to it. The result is a purpose-built agent without modifying the underlying model.
 
-### Modelfile Editing
+A "Python Tutor" that always uses your style guide. A "Meeting Summarizer" with your company's template. A "Code Reviewer" with your linting rules baked in. Every agent is a thin wrapper: pick a base model, configure it, and share it with your team.
 
-When editing a modelfile, you can customize the following settings:
+---
 
-* **Avatar Photo**: Upload an avatar photo to represent your modelfile.
-* **Model Name**: Change the name of your modelfile.
-* **System Prompt**: Provide an optional system prompt for your modelfile.
-* **Model Parameters**: Adjust the parameters of your modelfile.
-* **Prompt Suggestions**: Add prompts that will be displayed on a fresh new chat page.
-* **Documents**: Add documents to the modelfile (always RAG [Retrieval Augmented Generation]).
-* **Tools, Filters, and Actions**: Select the tools, filters, and actions that will be available to the modelfile.
-* **Vision**: Toggle to enable `Vision` for multi-modals.
-* **Tags**: Add tags to the modelfile that will be displayed beside the model name in the model selector dropdown.
+## Why Models?
 
-### Model Discovery and Import/Export
+### One base model, many personas
 
-The `Models` section also includes features for importing and exporting models:
+The same GPT-5.6 can power a coding assistant, a customer support bot, and a creative writer. Each preset has its own system prompt, tools, and knowledge, so the model behaves differently depending on which preset is selected.
 
-* **Import Models**: Use this button to import models from a .json file or other sources.
-* **Export Models**: Use this button to export all your modelfiles in a single .json file.
+### Knowledge and tools come pre-attached
 
-To download models, navigate to the **Ollama Settings** in the Connections tab. 
-Alternatively, you can also download models directly by typing a command like `ollama run hf.co/[model creator]/[model name]` in the model selection dropdown.
-This action will create a button labeled "Pull [Model Name]" for downloading.
+Instead of manually attaching documents and enabling tools every chat, bind them once to the model preset. Users get a fully configured agent out of the box.
 
-### Model Switching
+### Granular access control
 
-   **Example**: Switching between **Mistral**, **LLaVA**, and **GPT-3.5** in a Multi-Stage Task
+Restrict models to specific users or groups. A finance team sees their models; engineering sees theirs. Admins control what's available instance-wide.
 
-   - **Scenario**: A multi-stage conversation involves different task types, such as starting with a simple FAQ, interpreting an image, and then generating a creative response.
-   - **Reason for Switching**: The user can leverage each model's specific strengths for each stage:
-      - **Mistral** for general questions to reduce computation time and costs.
-      - **LLaVA** for visual tasks to gain insights from image-based data.
-      - **GPT-3.5** for generating more sophisticated and nuanced language output.
-   - **Process**: The user switches between models, depending on the task type, to maximize efficiency and response quality.
+### Dynamic system prompts
 
-    **How To**:
-    1. **Select the Model**: Within the chat interface, select the desired models from the model switcher dropdown. You can select up to two models simultaneously, and both responses will be generated. You can then navigate between them by using the back and forth arrows.
-    2. **Context Preservation**: Open WebUI retains the conversation context across model switches, allowing smooth transitions.
+Use variables like `{{USER_NAME}}` and `{{CURRENT_DATE}}` so the system prompt adapts to each user and session automatically. Write them without spaces inside the braces: the spaced form reaches the model as literal text. Only the chat and user variables (`{{ chat.variables.x }}`, `{{ user.variables.x }}`) tolerate spaces.
+
+---
+
+## Key Features
+
+| | |
+| :--- | :--- |
+| **Model presets** | System prompt, tools, knowledge, skills, and parameters in one package |
+| **Dynamic variables** | `{{USER_NAME}}`, `{{CURRENT_DATE}}`, `{{CURRENT_TIME}}` injected automatically |
+| **Bound tools** | Force-enable specific tools per model |
+| **Attached knowledge** | Knowledge bases, notes and files the model works from in every chat |
+| **Skills** | Bind markdown instruction sets that every new chat starts with selected |
+| **Access control** | Restrict to specific users or groups |
+| **Global defaults** | Set baseline capabilities and parameters for all models at once |
+| **Model controls** | Let people pick from approved parameter presets, such as thinking effort, right in the chat |
+| **Per-model TTS voice** | Give each persona its own voice |
+| **Translations** | Per-language name, description and prompt suggestions |
+| **Version history** | Every saved configuration is kept, and any of them can be set live again |
+
+---
+
+## Creating a Model
+
+Click **Create** in the **Workspace** header while the **Models** tab is selected, or click an existing model's name to open it in the editor. The arrow next to the name opens the model in a new chat.
+
+### Editor layout
+
+The editor opens on a banner header: the background image fills the banner, with the model's picture, name and ID set over its lower edge. Below it come the description, the base model, the tags and the system prompt. A saved system prompt opens folded to a short preview; click it or **Show more** to edit it. **Compare revision** beside the system prompt opens it next to an empty **Proposed revision** pane. Paste the revised version there and click **Compare** to mark the changes, then step through them with the arrows. **Apply to draft** puts the right-hand pane into the system prompt, so drop a change you do not want with **Original →**, which copies the original text of that change into the right-hand pane. For a change that replaces text, **Keep both** puts the original text followed by the proposed text into the right-hand pane. Save the model afterwards.
+
+Everything else sits in rows, one per setting, and a row opens when you click it.
+
+- **Switches**: **Features**, **Default Features** and **Builtin Tools** open into switches. Hover over a switch label to see what it does.
+- **Pickers**: **Knowledge**, **Tools**, **Skills**, **Filters** and **Actions** open a searchable picker. **Clear** removes every selected item and **Manage** opens the workspace page where those items are created. **Enable all** selects every item matching the search (Knowledge has **Upload Files** in its place). Items marked **Global** are always on. Tools, Skills, Filters, Actions and Sub-agents show each item's description under its name. When the list is empty, the picker names the workspace page where items are added.
+- **Advanced Params** shows how many parameters you changed (**N modified**), or **Default** when none.
+- **Prompts** holds the model's prompt suggestions.
+- **Voice** holds the realtime voice, the voice avatar and the TTS voice.
+
+The editor saves with **Save & Update** (**Save & Create** for a new model). When you edit an existing model, the **Describe this change** field sits beside it. **Save & Create** is always active; **Save & Update** becomes active once something has changed.
+
+### Core configuration
+
+| Field | Description |
+| :--- | :--- |
+| **Avatar** | Upload a custom image. Animated GIF and WebP are supported |
+| **Background** | An image shown in the editor's banner and behind the chat whenever this model is in use. Hover the banner and use **Add background**, **Change** or **Remove**. It has to be uploaded here, since only a file held by this instance is accepted: an external URL or a pasted data URI is refused outright. PNG, JPEG, WebP or GIF, at most 5 MiB and 25 megapixels |
+| **Name and ID** | Display name and unique identifier. An ID holds no spaces or tabs and is at most 256 characters |
+| **Base Model (From)** | The actual model that powers this agent. Admins can pick hidden models here. Other users see them in this list only with the [**Hidden Models**](/features/authentication-access/rbac/permissions#1-workspace-permissions) permission, which is off by default. Hidden models still stay out of their chat model selector. The permission changes only this list, not who can use a hidden model |
+| **Description** | Short summary shown in the model selector |
+| **Tags** | Organize models in the dropdown |
+| **Provider details** | Admins only. What the provider's model list reports for the model: inputs and outputs, context window, max output and supported parameters. **Not provided** when the provider leaves a field out. Hidden when the provider reports none of them |
+| **Access** | The **Access** button at the top right sets who can use the model: private (specific users/groups) or public. Shown to non-admins only with the [**Models Sharing**](/features/authentication-access/rbac/permissions#2-sharing-permissions) permission. On a saved model each change saves right away, without **Save & Update**. A change your sharing permissions do not allow is refused with "You do not have permission to share with the requested audience" |
+| **Language** | The globe selector at the top right, next to **Access**, switches the editor to a translation of the name, description, prompt suggestions and model controls. See [Translations](#translations) |
+
+![The model editor with base model, description and system prompt](/images/workspace/model-editor.png)
+
+:::warning A model saved with a space in its ID
+
+IDs with whitespace are refused now, in the editor, on the API and on import, where such a model is skipped rather than created.
+
+A model already stored with a space in its ID keeps answering requests, but saving it or changing its access grants fails, because both go through the same check. Recreate it under an ID without whitespace and delete the old one.
+
+:::
+
+### System prompt and variables
+
+The system prompt defines the behavior and persona. To review a rewritten system prompt before using it, use **Compare revision** beside the field (see [Editor layout](#editor-layout)). Use dynamic variables for context-aware instructions:
+
+| Variable | Output example |
+| :--- | :--- |
+| `{{CURRENT_DATE}}` | `2024-10-27` |
+| `{{CURRENT_TIME}}` | `14:30:05` |
+| `{{USER_NAME}}` | `Admin` |
+| `{{USER_GROUPS}}` | `Engineering, Beta Testers` (comma-separated, including groups inherited through parent groups; empty if the user is in no groups) |
+
+```
+You are a helpful assistant for {{USER_NAME}}.
+The current date is {{CURRENT_DATE}}.
+```
+
+:::note System prompts are instructions, not a guarantee
+
+Open WebUI does not require a special format for system prompts. Plain text, Markdown lists, and short structured sections all work; the only special syntax Open WebUI handles here is supported variables such as `{{CURRENT_DATE}}` and chat/user variables.
+
+How closely the assistant follows the prompt depends on the selected **Base Model**, the provider or local server's chat template, the full conversation context, and any extra instructions added by tools, files, RAG, skills, memory, or filters. If a prompt is configured in the right place but the model still ignores rules, compare against a stronger instruction-following model and check the provider/backend request formatting before assuming the prompt needs a different Open WebUI-specific format.
+
+:::
+
+:::tip Group-aware system prompts
+`{{USER_GROUPS}}` lets a single shared model adapt its behavior to the caller's RBAC groups, e.g. *"You may discuss internal roadmap items only when `{{USER_GROUPS}}` contains 'Engineering'."* The placeholder is resolved server-side at chat time, and the database lookup runs only when the variable is actually referenced in the template.
+:::
+
+### Capabilities and bindings
+
+Bind resources in the picker rows:
+
+| Setting | What it controls |
+| :--- | :--- |
+| **Knowledge** | Attach knowledge bases, notes or files, which also [limits the model's knowledge search to them](/features/workspace/knowledge#scoped-access-keeps-things-organized). **Upload Files** in the picker adds files straight from your computer. Click an attached item to choose between Focused Retrieval and Full Context. See [Retrieval Modes](/features/workspace/knowledge#retrieval-modes) |
+| **Tools** | Force-enable specific tools (e.g., Calculator for a Math Bot) |
+| **Skills** | Bind [Skills](/features/workspace/skills). Every new chat with the model starts with them selected. See [Model-attached skills](/features/workspace/skills#model-attached-skills) |
+| **Filters** | Attach pipeline filters (e.g., PII redaction). Each attached [toggleable filter](/features/extensibility/plugin/functions/filter#toggleable-filters-making-filters-user-controllable-selftoggle) has a **Start enabled in new chats** switch in the picker, which sets the model's default filters. The row appears once the instance has at least one filter function |
+| **Actions** | Attach action scripts (e.g., "Add to Memories"). The row appears once the instance has at least one action function |
+
+Toggle what the model can do in the **Features** row and the two rows that follow it:
+
+The editor shows only the options that can work on this instance, for example **Web Search** only while web search is on. A hidden option keeps its saved value.
+
+![Features and built-in tool categories in the model editor](/images/workspace/model-editor-capabilities.png)
+
+| Setting | What it controls |
+| :--- | :--- |
+| **Vision** | Enable image analysis (requires a vision-capable base model). Raster images (PNG, JPEG, WebP, GIF) reach the model as image inputs; an SVG is read as a document, so it travels on **File Upload** and the model works from its source text. With Vision off, images returned by tools reach the model as a short `[image]` note. |
+| **Web Search** | Enable the configured search provider |
+| **Code Interpreter** | Enable Python code execution |
+| **Terminal** | Let the model drive an attached [Open Terminal](/features/open-terminal) server to run commands and work with files. On by default; with it off, a chat's terminal is never handed to the model |
+| **Image Generation** | Enable image generation. With it on and more than one [image model](/features/chat-conversations/image-generation-and-editing) available, a **Default image model** row appears for choosing the image model this model's chats use unless the user picks another |
+| **Video Generation** | Enable [video generation](/features/chat-conversations/image-generation-and-editing/video-generation). With it on and more than one video model available, a **Default video model** row appears for choosing the video model this model's chats use unless the user picks another |
+| **Usage** | Ask the provider to report token counts on streamed replies (`stream_options.include_usage`). Off by default. Most OpenAI-compatible providers report nothing unless asked, so without it a response has no token figures to show and none to aggregate in [Analytics](/features/administration/analytics) |
+| **Citations** | Show the sources behind a reply, from knowledge, file retrieval and the builtin tools that return them. On by default; with it off no sources are shown. Web search hits are not sources in Native mode, see [Agentic Search](/features/chat-conversations/web-search/agentic-search) |
+| **Status Updates** | Show the progress lines a reply emits while it works, web search steps for example. On by default |
+| **Memory** | Whether the user's stored memories are injected into this model's context (on by default). Turn it off for a model that should answer without personal context; it does not delete anything, and it is separate from the **Memory** builtin tool category, which is about the model reading and writing memories itself |
+| **Builtin Tools** | The capability switches the built-in tools on as a whole. While it is on, a **Builtin Tools** row below **Features** controls which tool categories are available, see [Built-in System Tools](/features/extensibility/plugin/tools#built-in-system-tools-nativeagentic-mode). A category shows only while its feature is on |
+| **Sub-agents** | Shown while the **Sub-agents** builtin tool category is on: the models this model can hand [sub-agent](/features/chat-conversations/chat-features/subagents) work to. Users only get the listed models they have access to. Left empty, sub-agents run on the current model |
+| **File Upload** | Whether files can be attached to a message at all. On by default; with it off an upload in a chat using this model is refused, and **Preload files** disappears from this editor since there is nothing to extract |
+| **Preload files** | When enabled, attached files are processed via RAG and injected into the conversation. When disabled, nothing is injected and the model reads attached files with the builtin **Files** tools. Off by default with Native function calling and on with Legacy; the editor and **Model Defaults** show the effective value |
+| **Default Features** | The row right below **Features** lists **Web Search**, **Image Generation**, **Video Generation** and **Code Interpreter**, each only while that capability is on. A feature switched on here starts enabled in every new chat with this model; users can still turn it off per chat |
+| **Default terminal** | Shown while **Terminal** is on: the [Open Terminal](/features/open-terminal) server or [terminal](/features/open-terminal/terminals/orchestration/creating-terminals) selected by default for chats with this model. A terminal with a separate instance per model needs access to the model |
+| **TTS Voice** | In the **Voice** row: a specific voice for this model's responses |
+
+:::info Usage covers every chat the model runs
+The request for token counts is added server-side, so it applies wherever the model is used: the chat interface, the API and the chats Open WebUI starts on your behalf through [automations](/features/chat-conversations/chat-features/automations), [timers](/features/chat-conversations/chat-features/timers), [sub-agents](/features/chat-conversations/chat-features/subagents) and [channels](/features/channels). Nothing needs to be set per request. Only streaming requests are touched, so a model with **Stream Chat Response** turned off is left alone.
+:::
+
+### Voice avatar
+
+The **Voice** row has a **Voice avatar** setting, and when an admin sets **Call mode** to **Realtime** it also shows **Realtime Voice**. **Voice avatar** gives the model an animated 3D character for voice calls in both call modes, with optional animations and gestures. See [Voice Avatars](/features/chat-conversations/chat-features/voice-mode#voice-avatars) for setup and file requirements.
+
+![The Avatar setup dialog with a character loaded, the Idle, Listening and Speaking preview buttons, built-in state animations and three named gestures, wave, clap and think, each with a description](/images/features/audio/voice-avatar-setup.webp)
+
+### Advanced parameters
+
+The **Advanced Params** row shows how many parameters this model changes, for example **2 modified**, and opens the full list when clicked.
+
+- **Stop Sequences**: Force-stop generation on specific strings (e.g., `<|end_of_text|>`, `User:`). One text field, comma-separated.
+- **Temperature, Top P, etc.**: Adjust creativity and determinism.
+- **Context Compaction Threshold**: Set this model's own [context compaction](/troubleshooting/context-window#the-built-in-option-context-compaction) threshold. It only shows while context compaction is on.
+
+What you set here applies to every chat that does not set the same parameter itself. A user who sets one in a chat under **Model controls > Controls** or in their own **Settings > General**, and an API caller who sends one in the request, use their own value instead. See [Chat Parameters](/features/chat-conversations/chat-features/chat-params).
+
+### Model controls
+
+Model controls give people a few simple choices in the chat, such as how hard the model thinks or how long it answers, while you decide exactly which parameters each choice sends. A control called **Thinking** with the options Minimal, Low, Medium and High, each setting `reasoning_effort` to the matching value, lets anyone change the reasoning effort without knowing the parameter exists.
+
+Anyone with write access to a model can define its controls, in **Workspace > Models** or in **Settings > Models** (admin section). Use the **Model controls** row below **Advanced Params**: **+** adds a control, **Edit** changes one, **×** removes it and the handle on the left changes the order. Each row shows the control's default option.
+
+The controls are saved with the model and apply to everyone who can use it. People who can edit the model see the parameters behind each option in the editor, the JSON Preview and the export. People who can only use it see the names, descriptions and option names, which can be translated (see [Translations](#translations)).
+
+![The Edit control dialog for a Thinking control shown as a slider, with Minimal, Low, Medium and High options that each set reasoning_effort](/images/features/models/model-controls-edit.webp)
+
+| Field | What it does |
+| :--- | :--- |
+| **Name** | The label people see in the chat, for example **Thinking** |
+| **Default option** | The option that applies while a person has picked nothing. With **None**, the control sends nothing until someone picks an option |
+| **Description** | Optional help text shown in the chat |
+| **Display** | **Menu** shows the options as a list. **Slider** shows them as steps on a slider, in the order listed here, and needs at least two options |
+| **Options** | Each option has a name and one or more **Parameter** and **Value** pairs, added with **Add parameter**. Drag the handle to reorder options |
+
+An option's parameters work like the ones added with **Add Custom Parameter** in **Advanced Params**: the parameter name goes to the provider exactly as written, and a value that reads as JSON (a number, `true`, an object) is sent as that type, anything else as text. When an option has several parameters, all of them are sent together. For an Ollama model they end up in Ollama's `options`, except `think`, `format` and `keep_alive`, which go at the top level of the request. A `think`, `format` or `keep_alive` the model sets itself still wins over a control; leave those three unset on the model if a control should drive them.
+
+Saving controls on a model backed by a pipe function or on an arena model fails with **Model controls require a server-managed provider model.**
+
+#### Using model controls in chat
+
+When a selected model has controls, a knobs icon (**Model controls**) appears next to the model selector in the message input. It opens a panel listing each control with its current choice. A **Slider** control is changed by moving the slider, with **Default · Medium** (the default option's name) underneath to go back to the default, and its description behind the **?** icon. A **Menu** control opens a list with the description, **Default · Medium** and every option.
+
+![Model controls in the chat, with the Thinking slider set to High and a Verbosity slider on its default, Balanced](/images/features/models/model-controls-slider.webp)
+
+![Model controls in the chat shown as menus, with the Thinking submenu open on Default · Medium above Low, Medium and High](/images/features/models/model-controls-menu.webp)
+
+The icon is there whenever a selected model has controls, and for anyone allowed to use [Controls](/features/chat-conversations/chat-features/chat-params). Anyone with access to the model can pick its options, whatever their **Allow Chat Controls** and **Allow Chat Params** [permissions](/features/authentication-access/rbac/permissions#3-chat-permissions) say. This lets admins offer a curated choice, such as a thinking level, through model controls while keeping **Controls** and raw parameters hidden from users. With two models selected, each model's controls appear under its name, and each model gets its own choices.
+
+- **Choices are saved to the account, per model.** Picking an option saves it right away and it applies to every chat with that model, new and existing, on every device, until the person picks something else.
+- **Default follows the model.** While **Default** is ticked, every message sends the default option's parameters, or nothing from that control when the default option is **None**. If someone later changes the default option, everyone on **Default** moves with it.
+- **A picked option replaces the same parameter everywhere else.** Its values win over the model's **Advanced Params**, the [Global Model Defaults](#global-model-defaults-admin), the person's **Settings > General** and the chat's **Controls**. If two controls set the same parameter, the one lower in the list wins.
+- **A removed option blocks the model until a new pick.** If an editor removes an option someone picked, that person's messages to the model fail with `Model control <key>: the selected option is no longer available.` until they pick another option or **Default**. A pick for a removed control is skipped.
+- **Automations use the defaults.** A chat started by an [automation](/features/chat-conversations/chat-features/automations) always sends each control's default option.
+
+API callers get the same controls. See [Chat Completions](/reference/api-endpoints#chat-completions) for how a request picks an option.
+
+### Prompt suggestions
+
+Clickable starter chips that appear when a user opens a fresh chat with this model. Add phrases like "Explain this code step-by-step" or "Summarize this document" to guide users. They can be translated per language, see below.
+
+They live in the **Prompts** row. On **Default** the model shows the instance-wide suggestions from [Global Model Defaults](#global-model-defaults-admin); **Customize** gives it its own list, summarized as **Custom** with the number of suggestions, and **Use default** goes back to the instance-wide ones.
+
+### Translations
+
+The name, the description, the prompt suggestions and the names of [model controls](#model-controls) can each carry a version per language, so someone using Open WebUI in German sees a German model name and German starter chips while everyone else keeps the original text.
+
+Pick a language from the globe selector at the top right of the editor and the editor switches to editing that language, with the original shown as placeholder text. The **Model controls** row then lists every control name, description and option name for translation. A user gets the version matching their own interface language, and the original wherever you have not translated anything.
+
+The same works for tools, skills, functions, banners and arena models. See [Translations](/features/administration/translations) for the full picture, including how to translate valve labels.
+
+---
+
+## Model Management
+
+From the model list, click the ellipsis (**...**) on any model:
+
+![The model list in Workspace > Models](/images/workspace/models-list.png)
+
+| Action | Description |
+| :--- | :--- |
+| **Edit** | Open the configuration panel |
+| **Access** | On models you can edit, and for non-admins only with the **Models Sharing** permission: opens the editor's [access settings](/features/authentication-access/rbac/groups#resource-access-rbac) straight from the list. Changes save as you make them |
+| **Hide Model** / **Show Model** | Remove from the model selector without deleting, or bring it back |
+| **Hide from Sidebar** / **Keep in Sidebar** | Toggle the model's pin in the sidebar |
+| **Clone** | Create an editable copy you can rename and reconfigure |
+| **Copy Link** | Copy a chat URL (`/?model=<id>`) that opens a new chat on this model |
+| **Export** | Download the configuration as `.json` |
+| **Share** | Share to the Open WebUI community |
+| **Delete** | Permanently remove the preset |
+
+### Version history
+
+Every **Save & Update** that changes a model's configuration is kept as a version, together with the text typed into **Describe this change** beside the button. The version picker next to **Back** at the top of the model editor starts on **Production**, the configuration chats use. Open it to list the saved versions, newest first and 20 per page, each with its author and its description (or a short version ID when the description was left empty). It is there for anyone who can edit the model, in **Workspace > Models** and in **Settings > Models** (admin section) for models with saved settings.
+
+![The model editor with the version picker open next to Back, listing the Production version and older versions by their descriptions](/images/features/models/model-version-history.webp)
+
+- **Open a version** by picking it. The editor shows that version read-only.
+- **Set as Production** makes the opened version the live configuration. If the editor holds unsaved changes, you are asked to confirm first, since they are discarded.
+- **Delete** in a version's **⋯** menu removes it. The Production version cannot be deleted. Versions saved on top of a deleted one are relinked to its parent, so the chain stays complete.
+
+A version holds the name, base model, system prompt, parameters and the rest of the editor's settings, such as the description, tags, capabilities, prompt suggestions and the bound knowledge, tools, skills, filters, actions and terminal. The access settings, **Hide Model** and the **Enabled** switch belong to the live model and keep their current values when you change versions. Every existing model starts with one version, created by the upgrade.
+
+Setting a version as Production checks everything it points to, because an older version can reference things that have since been deleted or that you cannot reach. The live configuration stays as it was, and the switch is refused, when:
+
+- its base model is no longer available.
+- a knowledge base, knowledge file, note, skill, tool or terminal it binds is missing or not accessible to you.
+- a filter or action function it binds is missing or switched off.
+- its background image or voice avatar files are no longer accessible to you.
+
+To go ahead, bring the missing item back or get access to it, or pick another version.
+
+The same actions are available over the API, each taking the model ID as `?id=`: `GET /api/v1/models/model/history` (paged with `&page=`), `GET /api/v1/models/model/history/{history_id}`, `POST /api/v1/models/model/update/version` with `{"version_id": "..."}` and `DELETE /api/v1/models/model/history/{history_id}`. A save through `POST /api/v1/models/model/update` accepts an optional `commit_message`.
+
+### Enabled and disabled
+
+Rows you can edit also carry an **Enabled** switch, in **Workspace > Models** and in **Settings > Models** (admin section) alike. Switching it off pulls that one model out of the model list for everyone: it leaves the selector, and a request that names it fails with **"Model not found"**. Nothing is deleted, every other model stays where it was, and switching it back on brings the model straight back.
+
+**Hide** is the lighter option. It keeps the model in the list and only takes it out of the selector, which is why a hidden base model still powers the presets built on it.
+
+### Import and export
+
+- **Import**: From `.json` files or Open WebUI community links
+- **Export**: Download every custom model you can edit as a single `.json`, whatever the search box or filter shows. Admins get every custom model while `BYPASS_ADMIN_ACCESS_CONTROL` is on, which is the default
+- **Discover**: Browse community presets at the bottom of the page
+
+A model's background image travels with it. Export carries the image inside the file, and import stores it on the target instance as a fresh upload, so a model moved between instances keeps its background without you moving files by hand. See the [API endpoints reference](/reference/api-endpoints) for the export and import calls.
+
+A model whose ID is already taken by a model you cannot edit stops the import with **Uh-oh! This model id is already registered. Please choose another model id string.** Models before it in the file are imported.
+
+:::info Downloading base models
+To download new base models, go to **Settings > Connections** (admin section) and open **Manage** on an Ollama connection, or type `ollama run hf.co/{username}/{repository}:{quantization}` in the model selector.
+:::
+
+---
+
+## Global Model Defaults (Admin)
+
+Administrators can set baseline capabilities and parameters that apply to all models in **Settings > Models** (admin section). Click **Model Defaults** at the top of the list to open it, and save with the page's **Save** button. It uses the same rows as the model editor: **Model Capabilities** holds the **Features**, **Default Features** and **Builtin Tools** rows, a **Tools** picker sets the default tools, **Model Parameters** holds the advanced parameters and **Prompt Suggestions** the starter chips.
+
+- **Default Model Metadata** (`DEFAULT_MODEL_METADATA`): Baseline capabilities (vision, web search, preload files, code interpreter, builtin tools). Per-model overrides always win on conflicts.
+- **Default Model Params** (`DEFAULT_MODEL_PARAMS`): Baseline inference parameters (temperature, top_p, max_tokens, function_calling). Per-model values take precedence when explicitly set. This value is loaded from the environment as JSON; invalid JSON is ignored and falls back to `{}`.
+- **Tools**: tools that start enabled in new chats for every model without a tool list of its own. A model with its own tool list keeps it. The new model form starts with these tools selected.
+- **Default terminal**: the terminal new chats start with for every model that has no terminal of its own.
+- **Prompt suggestions**: the starter chips shown when a model has none of its own. The globe selector translates them per language, the same way a model's own suggestions are translated. See [Translations](#translations).
+
+These cover chat completions. Background task requests (titles, tags, follow-ups, search queries, autocomplete, context compaction summaries) do not go through them; their parameters are set separately, in [Task Models](/features/administration/task-models).
+
+### Merge behavior
+
+| Setting type | Strategy | Example |
+|---|---|---|
+| **Capabilities** | Deep merge | Global sets `file_context: false`, model sets `vision: true` > model gets both |
+| **Other metadata** | Fill-only | Global sets description, model has none > model gets the global value |
+| **Parameters** | Simple merge | Global sets `temperature: 0.7`, model sets `0.3` > model gets `0.3` |
+| **Custom parameters** | Key-by-key merge | Global adds `service_tier`, model adds `tools` > model gets both, and the model's value wins on a shared name |
+
+Custom parameters are the ones added with **Add Custom Parameter**, stored under `custom_params`. They are the only group merged entry by entry, so a model that defines one of its own keeps the global ones alongside it.
+
+**Default Features** and **Builtin Tools** work as a whole row. Once a model saves its own choice in either row, that choice replaces the global row. A model can switch off any default feature that **Model Defaults** turns on, and a built-in tool that **Model Defaults** turns off stays on for a model that turns it on.
+
+:::info A request that sets a parameter keeps its own value
+Both layers only fill in what the request left out. A parameter sent in the body of a [chat completions](/reference/api-endpoints#chat-completions) request survives, so an integration that sends its own `temperature` or `max_tokens` gets the value it asked for rather than the model's saved one. The exception is **Stream Chat Response**, which still decides whether the reply streams no matter what the request asked for.
+:::
+
+:::warning Knowledge base + function calling interaction
+Setting `function_calling: native` in global params changes how **all** models handle attached knowledge bases. In native mode, model-attached KBs are not auto-injected. The model must call builtin tools to retrieve knowledge. If your knowledge bases suddenly stop working, check global defaults first.
+
+See [Knowledge Base troubleshooting](/troubleshooting/rag#13-knowledge-base-attached-to-model-not-working).
+:::
+
+### Bulk management
+
+The admin model list opens on the **Available** view: every base model a connection currently offers, plus every workspace model. **Unavailable** lists the base models that no connection offers anymore but that still have saved settings, for example after a provider retired a model or a connection was removed. **All** shows both.
+
+Each model's ellipsis (**...**) menu starts with one of two actions, and both ask for confirmation first:
+
+- **Reset**, on base models a connection still offers, puts the settings saved for that model back to their defaults. The model stays in the list.
+- **Delete**, on workspace models and unavailable base models, removes the model and its saved settings from the list.
+
+Filter the admin model list by status (Enabled, Disabled, Visible, Hidden, Public, Private, Selected, Pinned) and use the **Actions** menu to enable, disable, show or hide every model in the current view at once. Useful when external providers expose hundreds of models. Drag-to-reorder works in a filtered view too: the model you move lands next to the visible model you dropped it by, and every model the filter hides keeps its place.
+
+---
+
+## Selected and Pinned Models (Admin)
+
+These are the two instance-wide settings that decide which model or models a user starts out with. They were previously called **default models**; the interface now calls them **Selected** and **Pinned** models. The configuration keys behind them are unchanged, so existing environment configuration keeps working.
+
+| Setting | Menu action | What it does | Config key |
+| :--- | :--- | :--- | :--- |
+| **Selected Model** | **Set as Selected Model** | Pre-selects this model in a new chat for users who have no model preference of their own and no [group default models](/features/authentication-access/rbac/groups#default-models-per-group) | [`DEFAULT_MODELS`](/reference/env-configuration#default_models) |
+| **Pinned Model** | **Set as Pinned Model** | Pre-fills the model shortcuts in the sidebar for users who have not pinned any models themselves | [`DEFAULT_PINNED_MODELS`](/reference/env-configuration#default_pinned_models) |
+
+Both accept more than one model, so you can hand users a small starting set rather than a single model.
+
+:::info Not the same as Model Defaults
+The **Model Defaults** panel at the top of the same page is a different feature: it sets baseline capabilities, parameters and prompt suggestions for all models. See [Global Model Defaults](#global-model-defaults-admin).
+:::
+
+### Setting a selected or pinned model
+
+1. Go to **Settings > Models** (admin section).
+2. Find the model with **Search Models**, or narrow the list with the view filter.
+3. Click the ellipsis (**...**) at the end of the model's row.
+4. Choose **Set as Selected Model** or **Set as Pinned Model**.
+
+![Set as Selected Model and Set as Pinned Model in a model's ellipsis menu](/images/features/models/model-row-menu.png)
+
+The change is saved immediately, no separate save step, and the row picks up a **Selected** or **Pinned** label next to the model name. Repeat on as many models as you want. To take one back out, open the same menu and choose **Remove Selected Model** or **Remove Pinned Model**.
+
+:::tip Faster toggling
+Hold **Shift** while the model list is open and every row exposes inline icon buttons for the same actions: the eye toggles visibility, the check toggles Selected, the pin toggles Pinned, the globe or lock toggles public access, and the pencil opens the model. A model that is already pinned shows a crossed-out pin, because clicking it removes the pin. Releasing Shift hides the icons again.
+
+![Inline quick-action icons revealed by holding Shift](/images/features/models/model-quick-actions.png)
+:::
+
+### Reviewing what is configured
+
+Open the view filter (the dropdown next to **Actions**, which starts on **Available**) and pick **Selected** or **Pinned** to list only the models currently configured as such. The same dropdown also filters by All, Available, Unavailable, Enabled, Disabled, Visible, Hidden, Public and Private, and by **Base Models** or **Workspace Models** to separate what your providers offer from the models built on top of them here. **Arena Models** lists the [arena models](/features/administration/evaluation#configuring-an-arena-model) an admin has set up.
+
+![The view filter with the Selected and Pinned options](/images/features/models/model-view-filter.png)
+
+### How a selected model resolves for a user
+
+For a new chat, Open WebUI takes the first of these that yields a model the user can actually use:
+
+1. A `model` or `models` [URL parameter](/features/chat-conversations/chat-features/url-params).
+2. The models bound to the folder the chat is started in, if any.
+3. The user's own default model, saved from the model selector in a chat with **Set as default**.
+4. The [default models of the user's groups](/features/authentication-access/rbac/groups#default-models-per-group), taken from the group deepest in the group hierarchy that sets some (the earliest created group wins a tie). Groups the user inherits through a parent group count too.
+5. The instance's **Selected Models**.
+6. The first available model in the list.
+
+Steps 3 to 5 also pick the starting model in Notes and the Playground.
+
+Models that have been hidden or removed are dropped at every step, so a user whose last-used model disappeared lands on a working one instead of an empty selector.
+
+**Pinned Models** work differently: they seed the user's sidebar shortcuts once, only when the user has no pinned models of their own. From then on the user's own pins win, and pins pointing at hidden or deleted models are cleaned up automatically.
+
+:::warning Selected is a starting point, not a restriction
+Setting a model as Selected does not stop anyone from switching to another model they have access to. To control what a user can reach, use per-model access control or **Hide**, described in [Curated-Interface Deployments](#curated-interface-deployments).
+:::
+
+---
+
+## Model Switching in Chat
+
+Switch models mid-conversation without losing context. Select up to two models simultaneously to compare responses side-by-side, using the arrow buttons to navigate between them. The model picker is **searchable**, type in the **Search a model** box to filter a long list, and a custom model is only selectable when its **base model** is available.
+
+![The model selector, searchable and showing pinned models](/images/features/chat/model-selector.png)
+
+You can also switch without opening the picker. Send `/model` followed by a model id, for example `/model gpt-5.1`, and the chat moves to that model; send `/model` on its own and it tells you which model the chat is on. The id has to match exactly, the display name will not do, and an id you cannot reach reports `Model not found`. Picking **Model** from the `/` menu opens the picker with its search box focused instead. See [Chat Features](/features/chat-conversations/chat-features/) for the other built-in slash commands.
+
+A model change is saved with the chat right away, so the chat reopens on that model. Switching applies the new model's default tools, skills, filters, features and terminal, and keeps anything you turned on or off yourself. Features and filters the new model cannot use are turned off. Sending a message to a model picked with `@` switches the chat to that model.
+
+---
+
+## Use Cases
+
+### Team-specific agents
+
+Create a "Sales Assistant" with your CRM knowledge base, objection-handling prompts, and email drafting tools. Share it with the sales group. Engineering never sees it.
+
+### Onboarding new users
+
+Build models with descriptive prompt suggestions ("Ask me about our company policies", "Help me set up my development environment") so new team members know exactly what to ask.
+
+### Enforcing organizational standards
+
+Set global defaults to disable code interpreter across all models, enforce a consistent temperature, or require function calling. Individual models can override when needed.
+
+---
+
+## Curated-Interface Deployments
+
+A common deployment pattern is to present regular users with a curated model (a preconfigured agent with a specific name, icon, system prompt and tools) while keeping the raw base model out of their way.
+
+Before picking an approach, understand the one rule that governs all of this.
+
+### The rule: a custom model always requires access to its base model
+
+Every model you create under **Workspace > Models** is a *workspace model*: it points at a base model and stores a reference to it, rather than being a standalone copy of that base. Creating one never produces a second, independent base model. It always sits on top of an existing base.
+
+When a user runs a workspace model, Open WebUI checks access to **both** the workspace model **and** its underlying base model. If the user cannot access the base model, the request fails with **"Model not found"**, even when the workspace model itself is shared publicly with them.
+
+This is by design. Without it, anyone could bypass a base model's access control by building a workspace model on a restricted base and sharing that wrapper publicly. A shared wrapper can never grant access that the base model withholds.
+
+:::warning
+If you previously relied on a workspace model to hand users a base model they could not otherwise see, that depended on an access-control gap that has since been patched. It no longer works, and it was never safe.
+:::
+
+The practical consequence: anyone who should use your curated model must also have access to its base model. You **hide** the base from those users, you do not restrict it away from them.
+
+### Recommended: a hidden public base model with a curated model on top
+
+This is the reliable way to give everyone a single curated experience:
+
+1. Set the base model (for example "GPT-5.6") to **Public**, so every intended user passes the base-access check.
+2. **Hide** the base model (ellipsis **...** > **Hide**) so it does not appear in the model selector.
+3. Create a curated workspace model on top of that base. Give it its own name, avatar, system prompt, knowledge and tools, then share it with your users (or leave it public).
+
+Regular users now see only the curated model in the picker. The base model stays reachable under the hood, which is what lets the curated model run, but it is invisible in the list. Admins can still open a hidden base model through its direct URL.
+
+:::tip Upgrading the upstream model
+When you move to a newer LLM, update the base model selection on the curated workspace model, and re-point anything else built on the old base. **Export** and **Import** help you carry settings across entries.
+:::
+
+### If some users must also see the raw base model
+
+**Hide** is global: a hidden base model is hidden for everyone, so you cannot use it to show the raw model to power users while keeping it out of regular users' pickers. A workspace model cannot do this either, because it inherits base access as described above.
+
+To give one group the raw model in their picker while everyone else gets only the curated model, the same upstream LLM has to appear as **two independent base models**, each with its own access control. That is a connection-level setup (for example, adding the model through a second connection), not something you can create from **Workspace > Models**. Restrict one base entry to your power users and make the curated one public. Because both are base models, neither inherits the other's access.
+
+---
+
+## Limitations
+
+### Preset, not fine-tune
+
+Model presets configure behavior through system prompts and tool bindings. They do not modify the underlying model weights. For deep behavioral changes, you need actual fine-tuning.
+
+### Fallback requires configuration
+
+If a base model becomes unavailable, the preset will fail unless `ENABLE_CUSTOM_MODEL_FALLBACK` is set to `True` and at least one [Selected Model](#selected-and-pinned-models-admin) is configured in **Settings > Models** (admin section). The fallback uses the first Selected Model.

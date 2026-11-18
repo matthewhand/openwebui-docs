@@ -1,0 +1,216 @@
+---
+sidebar_position: 1
+title: "Installation"
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Installation
+
+Choose an installation method based on your needs:
+
+| Method | When to use |
+| :--- | :--- |
+| **Docker** | Runs in an isolated container, separated from your host system. |
+| **Bare Metal** | The AI works directly on your machine, on your real files, tools, and environment. |
+| **Docker Compose** | You already run Open WebUI with Docker Compose and want to add Open Terminal to it. |
+
+Select your method below, then follow the steps.
+
+<Tabs>
+  <TabItem value="docker" label="Docker" default>
+
+Requires [Docker](https://www.docker.com/products/docker-desktop/).
+
+### 1. Start the container
+
+```bash
+docker run -d \
+  --name open-terminal \
+  --restart unless-stopped \
+  -p 8000:8000 \
+  -v open-terminal:/home/user \
+  -e OPEN_TERMINAL_API_KEY=your-secret-key \
+  ghcr.io/open-webui/open-terminal
+```
+
+Replace `your-secret-key` with a password of your choice.
+
+{/* TODO: Screenshot: Terminal showing the docker run command with Docker pulling the image. */}
+
+<details>
+<summary><b>Command breakdown</b></summary>
+
+| Flag | Purpose |
+| :--- | :--- |
+| `-d` | Run in background |
+| `--name open-terminal` | Container name for reference |
+| `--restart unless-stopped` | Auto-restart on reboot |
+| `-p 8000:8000` | Expose on `http://localhost:8000` |
+| `-v open-terminal:/home/user` | Persist files across restarts |
+| `-e OPEN_TERMINAL_API_KEY=...` | Authentication key |
+
+</details>
+
+### 2. Verify
+
+Open `http://localhost:8000/docs` in your browser. You should see the Open Terminal API page.
+
+:::tip Auto-generated API key
+If no API key was set, one is generated automatically. Find it with:
+```bash
+docker logs open-terminal
+```
+:::
+
+:::note OpenShift
+For OpenShift restricted SCC, use `ghcr.io/open-webui/open-terminal:openshift` through Terminals. That image supports restricted non-root pods, but not runtime package installs, Docker socket access, the iptables egress firewall, or `OPEN_TERMINAL_MULTI_USER=true`.
+:::
+
+  </TabItem>
+  <TabItem value="bare-metal" label="Bare Metal">
+
+:::warning
+In this mode, the AI can do anything your user account can do, including modifying and deleting files.
+:::
+
+### 1. Run Open Terminal
+
+**Option A: Run without installing:**
+
+```bash
+uvx open-terminal run --host 0.0.0.0 --port 8000 --api-key your-secret-key
+```
+
+Downloads and runs via [uv](https://docs.astral.sh/uv/) with no permanent installation.
+
+**Option B: Install with pip:**
+
+```bash
+pip install open-terminal
+open-terminal run --host 0.0.0.0 --port 8000 --api-key your-secret-key
+```
+
+Open Terminal prints its address and key on startup:
+
+```
+  Local:    http://localhost:8000
+  Network:  http://<this-machine-ip>:8000
+
+  API Key:  <your key appears here>
+```
+
+Use the **Local** address when Open WebUI runs on the same machine, and the **Network** address when it reaches the terminal from anywhere else.
+
+### 2. Working directory
+
+Open Terminal serves files from the current directory. To scope it to a specific project:
+
+```bash
+cd /path/to/your/project
+uvx open-terminal run --host 0.0.0.0 --port 8000 --api-key your-secret-key
+```
+
+Or skip the `cd` and point the server at the project with the `--cwd` flag:
+
+```bash
+uvx open-terminal run --cwd /path/to/your/project --host 0.0.0.0 --port 8000 --api-key your-secret-key
+open-terminal run --cwd /path/to/your/project
+```
+
+### Windows
+
+Supported via [pywinpty](https://github.com/andfoy/pywinpty). Full PowerShell support with colored output and interactive programs.
+
+  </TabItem>
+  <TabItem value="compose" label="Docker Compose">
+
+Add Open Terminal as a service in your existing `docker-compose.yml`:
+
+### 1. Update your Compose file
+
+```yaml title="docker-compose.yml"
+services:
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:latest
+    container_name: open-webui
+    ports:
+      - "3000:8080"
+    volumes:
+      - open-webui:/app/backend/data
+
+  open-terminal:
+    image: ghcr.io/open-webui/open-terminal
+    container_name: open-terminal
+    volumes:
+      - open-terminal:/home/user
+    environment:
+      - OPEN_TERMINAL_API_KEY=your-secret-key
+
+volumes:
+  open-webui:
+  open-terminal:
+```
+
+### 2. Start the services
+
+```bash
+docker compose up -d
+```
+
+With a project folder named `myproject`, Compose brings both services up together:
+
+```
+ Container myproject-open-terminal-1  Started
+ Container myproject-open-webui-1     Started
+```
+
+Check both are healthy with `docker compose ps` before moving on.
+
+:::tip Connection URL
+When both services share a Docker Compose network, use the service name as the host:
+```
+http://open-terminal:8000
+```
+`localhost` won't resolve between containers.
+:::
+
+  </TabItem>
+</Tabs>
+
+---
+
+## Run as an MCP server
+
+Open Terminal can also run as a [Model Context Protocol](https://modelcontextprotocol.io/) server with `open-terminal mcp`, exposing the terminal to MCP-compatible clients. This needs the optional `mcp` extra (which pulls in [FastMCP](https://github.com/jlowin/fastmcp)).
+
+**Option A: Run without installing:**
+
+```bash
+uvx --from "open-terminal[mcp]" open-terminal mcp
+```
+
+**Option B: Install with pip:**
+
+```bash
+pip install "open-terminal[mcp]"
+open-terminal mcp
+```
+
+By default the server uses the `stdio` transport (the client launches the process and talks to it over standard input/output), so most MCP clients just need the command above.
+
+To serve over HTTP instead, switch to the `streamable-http` transport. The `--host` and `--port` flags apply only to this transport (defaults: host `0.0.0.0`, port `8000`):
+
+```bash
+open-terminal mcp --transport streamable-http --host 127.0.0.1 --port 8000
+```
+
+The `--config` (path to a TOML config file) and `--cwd` (working directory for the server process) flags work the same as for `open-terminal run`.
+
+---
+
+## Next steps
+
+- [**Connect to Open WebUI →**](./connecting.md)
+- [**Updating →**](./updating.mdx), how to move an existing install to a newer version.

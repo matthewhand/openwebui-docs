@@ -1,0 +1,120 @@
+---
+sidebar_position: 0
+title: "Advanced Workflows"
+---
+
+# Advanced Workflows with Skills
+
+These workflows combine multiple Open Terminal capabilities into powerful multi-step pipelines. Each one includes a **Skill**, a reusable set of instructions you create in Open WebUI that tells the AI exactly how to approach a specific type of task.
+
+---
+
+## What are Skills?
+
+A **Skill** is a reusable set of markdown instructions that you save in Open WebUI. When you invoke a skill, its instructions are injected into the AI's system prompt for that conversation, making the AI an expert at that specific task.
+
+Think of it like giving someone a detailed SOP (standard operating procedure) before asking them to do a job, except the AI can reference it consistently across conversations.
+
+### Creating a Skill
+
+1. Go to **Workspace** in the left sidebar
+2. Click **Skills**
+3. Click **Create** (+ button)
+4. Give it a **name** (e.g., "Data Report Generator") and a **description**
+5. Write the instructions in markdown in the **content area**
+6. Click **Save & Create**
+
+![Open WebUI model capabilities page](/images/open-terminal-model-capabilities.png)
+
+:::tip Frontmatter shortcut
+If your skill instructions start with YAML frontmatter, the name and description fields auto-populate:
+
+```markdown
+---
+name: data-report-generator
+description: Analyzes data files and creates professional PDF reports
+---
+
+## Instructions
+When asked to analyze data:
+1. First, read the file...
+```
+:::
+
+### Using a Skill
+
+There are two ways to use a skill:
+
+**Option 1: Mention it in chat (`$`)**
+
+Type `$` in the chat input, then search for your skill by name. Select it, and the AI receives the **instructions** for that conversation. This is best when you want to explicitly tell the AI to follow a specific skill right now.
+
+![AI interacting with data using skills and structured workflows](/images/open-terminal-ai-csv-analysis.png)
+
+**Option 2: Let the AI find it (auto-discovery)**
+
+This is the more powerful option. With built-in tools active and the model's **Skills** category on, the AI **automatically discovers and uses every active skill you can read when relevant**. You don't need to mention the skill at all. Attaching a skill to a model (**Workspace → Models → Edit**, **Skills** row) pre-selects it in the chat. Without built-in tools, an attached skill is injected into every chat with that model.
+
+Here's how it works behind the scenes:
+
+1. The AI receives a manifest listing the **name and description** of every active skill you can read, attached ones included, which keeps the full instructions out of the context until needed
+2. When your request matches a skill's description, the AI **autonomously calls a built-in `view_skill` tool** to load the instructions and the list of the skill's supporting files
+3. The AI then follows those instructions to handle your request
+
+This means that with a "Data Report Generator" skill in your workspace, any time you drop a CSV and say "analyze this," the AI will automatically load and follow the reporting instructions, without you needing to remember the skill exists.
+
+![Model capabilities settings page](/images/open-terminal-model-capabilities.png)
+
+:::tip Attach multiple skills for a Swiss-army-knife model
+Attach several skills to a single model and it becomes a multi-purpose expert. Drop a spreadsheet → it loads the data analysis skill. Ask "research EV batteries" → it loads the research skill. Build a landing page → it loads the web dev skill. All automatically.
+:::
+
+### Sharing Skills
+
+Skills have access controls. You can:
+- Keep them **private** (only you can use them)
+- Share with **specific users or groups**
+- Make them **public** (available to everyone on your instance)
+
+Click the **Access** button in the skill editor to configure who can use your skill. Users who are not admins see it only with the **Skills Sharing** permission.
+
+![AI integration settings and access controls](/images/open-terminal-integrations-page.png)
+
+---
+
+## Workflow Library
+
+Each page below is a complete workflow with a copy-pasteable skill:
+
+| Workflow | What it does |
+| :--- | :--- |
+| **[Data Reports](/features/open-terminal/use-cases/advanced-workflows/data-reports)** | Turn messy CSVs into polished PDF reports with charts |
+| **[Database Analysis](/features/open-terminal/use-cases/advanced-workflows/database-analysis)** | Connect to PostgreSQL/MySQL/SQLite, run queries, produce insights |
+| **[Research Assistant](/features/open-terminal/use-cases/advanced-workflows/research-assistant)** | Gather web sources and write structured briefings |
+| **[Email Processing](/features/open-terminal/use-cases/advanced-workflows/email-processing)** | Extract action items and deadlines from .eml files |
+| **[Document Comparison](/features/open-terminal/use-cases/advanced-workflows/document-comparison)** | Diff two versions of a contract or proposal |
+| **[Finance Dashboard](/features/open-terminal/use-cases/advanced-workflows/finance-dashboard)** | Analyze bank statements and chart spending |
+| **[Image Processing](/features/open-terminal/use-cases/advanced-workflows/image-processing)** | Batch resize, watermark, and convert images |
+| **[Competitive Analysis](/features/open-terminal/use-cases/advanced-workflows/competitive-analysis)** | Scrape competitor pricing and build comparisons |
+| **[App Builder](/features/open-terminal/use-cases/advanced-workflows/app-builder)** | Build a complete web app from a description |
+| **[Code Review](/features/open-terminal/use-cases/advanced-workflows/code-review)** | Review code changes for security, performance, and style issues |
+
+---
+
+## Tips for Writing Great Skills
+
+### Keep instructions specific
+Bad: "Analyze the data"
+Good: "Read the file, count rows, identify columns, check for missing values, then compute averages per category"
+
+### Number your steps
+LLMs follow numbered instructions more reliably than prose paragraphs.
+
+### Include output expectations
+Tell the skill what the final deliverable should look like: "Create a PDF with a title page and 3 sections" is better than "make a report."
+
+### Test and iterate
+Create the skill, try it on a real task, and refine the instructions based on what the AI gets right or wrong.
+
+### Combine with Open Terminal capabilities
+The real power comes from combining skills with Open Terminal's tools: file reading, code execution, web preview, and the file browser. A skill that says "read the spreadsheet, generate a chart with Python, and save it as a PNG" leverages all of these.

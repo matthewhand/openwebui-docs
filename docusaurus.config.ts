@@ -1,14 +1,33 @@
+import path from "path";
+import webpack from "webpack";
 import { Config } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
 
-import { themes as prismThemes } from "prism-react-renderer";
+import rehypeShiki, { type RehypeShikiOptions } from "@shikijs/rehype";
+import { type BundledLanguage, bundledLanguages } from "shiki";
+
+const shikiPlugin: [typeof rehypeShiki, RehypeShikiOptions] = [
+	rehypeShiki,
+	{
+		themes: {
+			light: "github-light",
+			dark: "github-dark",
+		},
+		defaultColor: false,
+		langs: Object.keys(bundledLanguages) as BundledLanguage[],
+	},
+];
 
 const config: Config = {
 	title: "Open WebUI",
-	tagline: "ChatGPT-Style WebUI for LLMs (Formerly Ollama WebUI)",
-	favicon: "img/favicon.png",
+	titleDelimiter: "/",
+	tagline: "On a mission to build the best AI interface",
+	favicon: "images/favicon.png",
 
-	url: process.env.SITE_URL || "https://openwebui.com",
+	// Set the production url of your site here
+	url: process.env.SITE_URL || "https://docs.openwebui.com",
+	// Set the /<baseUrl>/ pathname under which your site is served
+	// For GitHub pages deployment, it is often '/<projectName>/'
 	baseUrl: process.env.BASE_URL || "/",
 
 	// GitHub pages deployment config.
@@ -17,7 +36,8 @@ const config: Config = {
 	projectName: "docs", // Usually your repo name.
 
 	onBrokenLinks: "throw",
-	onBrokenMarkdownLinks: "warn",
+	onBrokenAnchors: "throw",
+	onDuplicateRoutes: "throw",
 
 	// Even if you don't use internationalization, you can use this field to set
 	// useful metadata like html lang. For example, if your site is Chinese, you
@@ -30,8 +50,24 @@ const config: Config = {
 	// Enable Mermaid for diagrams
 	markdown: {
 		mermaid: true,
+		hooks: {
+			onBrokenMarkdownLinks: "throw",
+		},
 	},
-	themes: ["@docusaurus/theme-mermaid"],
+	clientModules: ["./src/clientModules/analytics.js"],
+	themes: [
+		"@docusaurus/theme-mermaid",
+		[
+			require.resolve("@easyops-cn/docusaurus-search-local"),
+			{
+				hashed: true,
+				indexBlog: false,
+				docsRouteBasePath: "/",
+				highlightSearchTermsOnTargetPage: true,
+				explicitSearchResultPath: true,
+			},
+		],
+	],
 
 	presets: [
 		[
@@ -43,15 +79,18 @@ const config: Config = {
 					// Please change this to your repo.
 					// Remove this to remove the "edit this page" links.
 					editUrl: "https://github.com/open-webui/docs/blob/main",
-					exclude: ["**/tab-**/**"],
+					exclude: ["**/tab-**/**", "**/_template.*"],
+					beforeDefaultRehypePlugins: [shikiPlugin],
 				},
 				// blog: false,
 				blog: {
 					showReadingTime: true,
+					onUntruncatedBlogPosts: "ignore",
 					// Please change this to your repo.
 					// Remove this to remove the "edit this page" links.
 					// editUrl:
 					// "https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/",
+					beforeDefaultRehypePlugins: [shikiPlugin],
 				},
 				theme: {
 					customCss: "./src/css/custom.css",
@@ -62,40 +101,28 @@ const config: Config = {
 
 	themeConfig: {
 		// Replace with your project's social card
-		// image: "img/docusaurus-social-card.jpg",
+		// image: "images/docusaurus-social-card.jpg",
 		navbar: {
 			title: "Open WebUI",
 			logo: {
-				src: "img/logo.png",
-				srcDark: "img/logo-dark.png",
+				src: "images/favicon.png",
+				srcDark: "images/favicon.png",
 			},
 			items: [
-				// {
-				// 	type: "docSidebar",
-				// 	position: "left",
-				// 	sidebarId: "pipelines",
-				// 	label: "Pipelines",
-				// },
-
-				// {
-				//   type: "docSidebar",
-				//   sidebarId: "blog",
-				//   position: "left",
-				//   label: "Blog",
-				// },
-
-				// {
-				//   href: "/blog",
-				//   label: "Blog",
-				//   position: "left",
-				// },
 				{
+					href: "https://openwebui.com/blog",
+					label: "Blog",
+					position: "left",
+				},
+				{
+					label: "GitHub",
 					href: "https://github.com/open-webui/open-webui",
 					position: "right",
 					className: "header-github-link",
 					"aria-label": "GitHub repository",
 				},
 				{
+					label: "Discord",
 					href: "https://discord.com/invite/5rJgQTnV4s",
 					position: "right",
 					className: "header-discord-link",
@@ -104,10 +131,6 @@ const config: Config = {
 			],
 		},
 		footer: {
-			logo: {
-				src: "img/logo-dark.png",
-				height: 100,
-			},
 			style: "light",
 			links: [
 				{
@@ -121,6 +144,10 @@ const config: Config = {
 							label: "FAQ",
 							to: "faq",
 						},
+						{
+							label: "Help Improve The Docs",
+							to: "https://github.com/open-webui/docs",
+						},
 					],
 				},
 				{
@@ -133,6 +160,10 @@ const config: Config = {
 						{
 							label: "Discord",
 							href: "https://discord.gg/5rJgQTnV4s",
+						},
+						{
+							label: "Reddit",
+							href: "https://www.reddit.com/r/OpenWebUI/",
 						},
 						{
 							label: "𝕏",
@@ -151,17 +182,47 @@ const config: Config = {
 							label: "About",
 							to: "https://openwebui.com",
 						},
+						{
+							label: "Sovereign AI",
+							to: "/enterprise/sovereign-ai",
+						},
+						{
+							label: "Report a Vulnerability / Responsible Disclosure",
+							to: "https://github.com/open-webui/open-webui/security",
+						},
 					],
 				},
 			],
 			// copyright: `Copyright © ${new Date().getFullYear()} OpenWebUI`,
 		},
 		prism: {
-			theme: prismThemes.github,
-			darkTheme: prismThemes.dracula,
+			theme: {
+				plain: { color: "#333", backgroundColor: "#f3f3f3" },
+				styles: [],
+			},
+			darkTheme: {
+				plain: { color: "#ccc", backgroundColor: "#000" },
+				styles: [],
+			},
 		},
 	} satisfies Preset.ThemeConfig,
-	plugins: [require.resolve("docusaurus-lunr-search")],
+
+	plugins: [
+		// Rank verbatim phrase matches above token results (see src/client/exactSearch.js).
+		() => ({
+			name: "docs-exact-search",
+			configureWebpack() {
+				return {
+					plugins: [
+						new webpack.NormalModuleReplacementPlugin(
+							/searchByWorker$/,
+							path.resolve(__dirname, "src/client/exactSearch.js")
+						),
+					],
+				};
+			},
+		}),
+	],
 };
 
 export default config;

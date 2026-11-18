@@ -1,0 +1,206 @@
+---
+sidebar_position: 3
+title: "Roles"
+---
+
+
+Open WebUI defines three primary **System Roles** that determine the fundamental access level of a user account. These roles are distinct from [Groups](./groups.md) and [Permissions](./permissions.md).
+
+| Role | Keyword | Description |
+| :--- | :--- | :--- |
+| **Admin** | `admin` | **Superuser**. Full control over the system. |
+| **User** | `user` | **Standard User**. Subject to RBAC permissions. |
+| **Pending** | `pending` | **Restricted**. No access until approved. |
+
+## Role Details
+
+### Administrator (`admin`)
+The Admin role is designed for system maintainers.
+*   **Full Access**: default access to all resources and settings.
+*   **Management**: Can manage users, groups, and global configurations.
+*   **Bypass**: Bypasses most permission checks by default.
+
+:::warning Admin Limitations & Best Practices
+While Administrators generally have unrestricted access, certain system configurations can limit their capabilities for security and privacy:
+*   **Privacy Controls**: [`ENABLE_ADMIN_CHAT_ACCESS=False`](/reference/env-configuration#enable_admin_chat_access) hides user chats from admins in the interface. It does not keep an admin away from the data; see [Chat Data Privacy](/security/chat-data-privacy-and-encryption#admin-users).
+*   **Feature-Specific Exceptions May Apply**: Some features can enforce additional checks beyond the standard admin bypass behavior. For API keys specifically, admins can generate keys whenever `ENABLE_API_KEYS` is enabled.
+*   **Access Control Exceptions**: If `BYPASS_ADMIN_ACCESS_CONTROL` is disabled, Admins are checked against access grants like everyone else. A private workspace item (model, knowledge base, prompt, tool, skill, note) is visible only to its owner and to the people it is shared with. Admin-configured connections and arena models with no grants stay admin-only. See [What Private Means for Each Resource Type](/features/authentication-access/rbac/groups#what-private-means-for-each-resource-type).
+
+For a robust security posture, we recommend including Admins in your permission schema (via Groups) rather than relying solely on the role's implicit bypasses. This ensures consistent access if bypass limitations are ever enabled.
+:::
+
+### Standard User (`user`)
+This is the default functional role for team members.
+*   **Subject to Permissions**: Does not have implicit access. All capabilities must be granted via **Global Default Permissions** or **Group Memberships**.
+*   **Additive Rights**: As explained in the [Permissions](./permissions.md) section, their effective rights are the sum of all their grants.
+
+### Pending User (`pending`)
+The default state for new sign-ups (if configured) or deactivated users.
+*   **Zero Access**: Cannot perform any actions or see any content.
+*   **Approval Required**: Must be promoted to `user` or `admin` by an existing Administrator.
+
+:::note
+The `admin` role effectively has `check_permission() == True` for everything. Granular permissions (like disabling "Web Search") generally do **not** apply to admins.
+:::
+
+## Role Assignment
+
+### Initial Setup
+*   **First User:** The very first account created on a fresh installation is automatically assigned the **Admin** role.
+*   **Headless Admin Creation:** For automated/containerized deployments, you can create the admin account automatically using environment variables (see below).
+*   **Subsequent Users:** New sign-ups are assigned the **Default User Role**.
+
+### Configuration
+You can control the default role for new users via the `DEFAULT_USER_ROLE` environment variable:
+
+```bash
+DEFAULT_USER_ROLE=pending
+# Options: 'pending', 'user', 'admin'
+```
+*   **pending (Recommended for public/shared instances):** New users cannot log in until an Admin explicitly activates them in the Admin Panel.
+*   **user:** New users get immediate access with default permissions.
+*   **admin:** (Use with caution) New users become full administrators.
+
+## Changing Roles
+Administrators can change a user's role at any time via **Admin Panel > Users**.
+*   Promoting a user to `admin` grants them full control.
+*   Demoting an admin to `user` subjects them to the permission system again.
+
+### When a Role Change Takes Effect
+
+A role change ends that account's live WebSocket connections straight away, whichever route the change arrived by:
+
+*   **Admin Panel > Users**, or the user update API behind it.
+*   A SCIM directory sync, including the `active` flag that maps to the `user` and `pending` roles (see [SCIM 2.0](/features/authentication-access/auth/scim)).
+*   An OAuth or OIDC sign-in with [OAuth Role Management](/features/authentication-access/auth/sso#oauth-role-management) enabled.
+*   A sign-in carrying the [trusted role header](/features/authentication-access/auth/sso#role-management).
+
+Deleting an account ends its live connections in the same way.
+
+In a multi-replica deployment with [`WEBSOCKET_MANAGER=redis`](/reference/env-configuration#websocket_manager), connections are found through the shared session pool and dropped on whichever replica is holding them, not only on the replica that handled the change.
+
+The browser reconnects on its own and re-authenticates, so the features that run over that connection (channels, collaborative note editing) act on the new role instead of the one cached when the connection opened. REST API calls read the account from the database on every request, so a demoted admin loses the admin-only endpoints on their very next call regardless.
+
+:::note A role change does not revoke the person's token
+They stay signed in and keep browsing under the new role. Demotion to `pending` does lock them out, because `pending` accounts are refused on every API request and on the WebSocket handshake. To end their sessions as well, use [Sign out all devices](#signing-a-user-out-of-every-device).
+:::
+
+## Signing a User Out of Every Device
+
+Open the user in **Admin Panel > Users** and click **Sign out all devices** at the bottom of the edit dialog, then confirm. Every session of that user ends: browser tabs and apps signed in with the account are refused on their next request and have to sign in again, and their live connections are closed. Automation and sub-agent runs in progress for that user lose access too. Use it when a device is lost, an account may be compromised or someone leaves.
+
+![The Sign out all devices? confirmation, which says the user will need to sign in again on every device and that API keys remain active](/images/features/auth/sign-out-all-devices.webp)
+
+- **API keys stay active.** [Delete or rotate the user's key](/features/authentication-access/api-keys#managing-a-users-key-admin) to cut off scripts and integrations.
+- **Works without Redis.** The sign-out is stored in the database, so it applies on every worker and replica.
+- **The primary administrator** can only be signed out this way by themselves.
+
+Setting a new password for the user in the same dialog signs them out everywhere as well. The action is recorded as the `auth.sessions_revoked` [event](/features/extensibility/plugin/functions/event). Scripts can trigger it with `POST /api/v1/users/{user_id}/sessions/revoke` using an administrator's API key. See [Token Revocation](/getting-started/advanced-topics/hardening#token-revocation) for every action that signs an account out.
+
+## The Primary Administrator
+
+The first account created on an instance (see [Initial Setup](#initial-setup)) is the **primary administrator**. There is no special flag for it: internally it is simply the earliest-created account, determined by its creation timestamp.
+
+The primary administrator has one small piece of extra protection. The interface does not show a delete control for it, and the backend refuses to delete it through the user API. This exists purely to prevent the original bootstrap account from being removed by accident, which could otherwise leave an instance without its founding administrator or trigger an unwanted role reassignment.
+
+This is a convenience safeguard, not a security boundary. All administrators share full control of the system, so any administrator can still change or remove any account, including the primary one, at the data layer.
+
+### Swapping the Primary Administrator
+
+Sometimes the primary administrator legitimately needs to change, for example when the person who first set up the deployment leaves the organization. Because the role is decided purely by creation timestamp, the primary administrator is whichever administrator account is oldest, so reorganizing or removing accounts at the database level changes which one is treated as primary.
+
+This is deliberately a data-layer operation rather than a one-click button, so that changing the founding account stays an intentional, considered action. Back up your database before making the change, and perform it while the instance is idle. We do not list exact queries here because the database schema evolves between releases; work against your current schema, and reach out on our community channels if you need guidance for your version.
+
+## Headless Admin Account Creation
+
+For **automated deployments** (Docker, Kubernetes, cloud platforms) where manual interaction is impractical, Open WebUI supports creating an admin account automatically on first startup using environment variables.
+
+### How It Works
+
+When the following environment variables are configured:
+- `WEBUI_ADMIN_EMAIL`: The admin account email address
+- `WEBUI_ADMIN_PASSWORD`: The admin account password
+- `WEBUI_ADMIN_NAME`: (Optional) The admin display name (defaults to "Admin")
+
+Open WebUI will automatically:
+1. Check if any users exist in the database on startup
+2. If the database is empty (fresh installation), create an admin account using the provided credentials
+3. Securely hash and store the password
+4. Automatically disable sign-up (`ENABLE_SIGNUP=False`) to prevent unauthorized account creation
+
+### Use Cases
+
+This feature is particularly useful for:
+- **CI/CD Pipelines**: Automatically provision Open WebUI instances with admin credentials from secrets management
+- **Docker/Kubernetes Deployments**: Eliminate the time gap between container startup and manual admin creation
+- **Automated Testing**: Create reproducible test environments with pre-configured admin accounts
+- **Headless Servers**: Deploy instances where accessing the UI to manually create an account is impractical
+
+### Example Configuration
+
+#### Docker Compose
+```yaml
+services:
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    environment:
+      - WEBUI_ADMIN_EMAIL=admin@example.com
+      - WEBUI_ADMIN_PASSWORD=${ADMIN_PASSWORD}  # Use secrets management
+      - WEBUI_ADMIN_NAME=System Administrator
+    # ... other configuration
+```
+
+#### Kubernetes Secret
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: openwebui-admin
+type: Opaque
+stringData:
+  admin-email: admin@example.com
+  admin-password: your-secure-password
+  admin-name: System Administrator
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: open-webui
+spec:
+  containers:
+  - name: open-webui
+    image: ghcr.io/open-webui/open-webui:main
+    env:
+    - name: WEBUI_ADMIN_EMAIL
+      valueFrom:
+        secretKeyRef:
+          name: openwebui-admin
+          key: admin-email
+    - name: WEBUI_ADMIN_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: openwebui-admin
+          key: admin-password
+    - name: WEBUI_ADMIN_NAME
+      valueFrom:
+        secretKeyRef:
+          name: openwebui-admin
+          key: admin-name
+```
+
+### Important Notes
+
+:::warning Security Considerations
+- **Use Secrets Management**: Never hardcode `WEBUI_ADMIN_PASSWORD` in Docker Compose files or Dockerfiles. Use Docker secrets, Kubernetes secrets, or environment variable injection.
+- **Strong Passwords**: Use a strong, unique password for production deployments.
+- **Change After Setup**: Consider changing the admin password through the UI after initial deployment for enhanced security.
+- **Automatic Signup Disable**: After admin creation, sign-up is automatically disabled. You can re-enable it later via **Settings > General** (admin section) if needed.
+:::
+
+:::info Behavior Details
+- **Only on Fresh Install**: The admin account is created **only** if no users exist in the database. If users already exist, these environment variables are ignored.
+- **Password Hashing**: The password is securely hashed using the same mechanism as manual account creation, ensuring security.
+- **One-Time Operation**: This is a one-time operation on first startup. Subsequent restarts with the same environment variables will not modify the existing admin account.
+:::
+
+For complete documentation on these environment variables, see the [Environment Configuration Guide](/reference/env-configuration#webui_admin_email).

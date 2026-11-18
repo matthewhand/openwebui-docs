@@ -1,0 +1,93 @@
+---
+sidebar_position: 1
+title: "Generate and Edit Images in Chat"
+sidebar_label: "Usage"
+description: "Enable image generation in a conversation, create images from prompts, and edit or combine uploaded images in Open WebUI."
+---
+
+Generate images from a prompt, or upload images and describe the changes you want, in an Open WebUI conversation. An administrator must first add an [image connection](/features/chat-conversations/image-generation-and-editing); keep your normal chat model selected while using it.
+
+Image generation is only available in a chat when all of the following are true:
+
+- **Image Generation** is enabled in **Settings** > **Images** (admin section) and at least one connection you can access offers a generating model.
+- Your role has the **Image Generation** feature permission. Admins always pass this check.
+- The model has the **Image Generation** capability checked in **Workspace** > **Models** > **Edit**. Outside Legacy mode its **Builtin Tools** capability and the **Image Generation** builtin tool category must stay enabled too. All of these are on by default.
+- The **Image** toggle is on for that chat, in the **+** menu of the message input. Tick **Image Generation** under **Default Features** in the model editor to have it active in every new chat.
+
+If **Image** is missing from the **+** menu entirely, then either image generation is off globally, the **Image Generation** capability is off on one of the selected models or your role lacks the permission. A wrong URL or key shows up when you generate: the toggle stays and generation fails.
+
+## Using Image Generation
+
+1. Switch **Image** on in the **+** menu of the message input.
+2. Enter your image generation prompt.
+3. Click `Send`.
+
+![Image Generation Tutorial](/images/tutorial_image_generation_2.png)
+
+:::warning Keep chatting with your chat model
+The model selector at the top of the chat stays on your normal chat model. The image model is never chosen there. An administrator sets the default, and you can pick another from the **Image** entry in the **+** menu when more than one is available.
+
+Picking the image model as the chat model is the most common setup mistake. Everything looks configured, and generation fails or returns nothing useful, because an image model cannot hold a conversation and is not being asked for a picture in the way it expects. If image generation has stopped working and the settings look right, check what the model selector says first.
+
+The exception is a chat model that creates images itself on a connection whose **API Type** is `Responses`, such as a Gemini image model through OpenRouter. Its images show in the reply.
+:::
+
+What happens next depends on the **Function Calling** mode. It can be set per chat in **Model controls** > **Controls** > **Advanced Params**, for yourself in **Settings** > **General** > **Advanced Parameters**, per model in the model editor or globally under **Model Defaults** in the admin model settings. The first of those that is not **Default** wins, and Native applies when none of them is set.
+
+**Native** takes the tool path described below. In **Legacy** mode every message you send while the toggle is on goes straight to the image model, whatever you asked for. It edits instead of creating when the recent conversation carries images and **Image Edit** is on. On the create path a task model rewrites your message into the image prompt first, unless you switch **Image Prompt Generation** off under **Legacy** in the admin image settings. The prompt template lives under **Settings** > **Interface** (admin section), in the **Generation** section. In both modes, with a terminal selected in the chat, generated and edited images are also saved to its working directory, so the model can keep working on them with terminal tools.
+
+## Choosing an Image Model
+
+When several image models are available to you, the **+** menu shows the current choice next to **Image**. Click the arrow to pick another model for this chat. **Default** uses the default of the chat model, or the administrator's default when the model has none.
+
+## Native Tool-Based Generation (Agentic)
+
+With **Native Function Calling** (see the [**Central Tool Calling Guide**](/features/extensibility/plugin/tools#tool-calling-modes-default-vs-native)), the model invokes image generation directly as a tool.
+
+### How it works:
+- **Natural Language**: You can simply ask the model: *"Generate an image of a cybernetic forest."*
+- **Model Dependent**: A model that does not call tools reliably will simply never call `generate_image`, so try a stronger model before suspecting your engine configuration.
+- **Display**: The generated image is displayed directly in the chat interface.
+- **Editing**: The `edit_image` tool (e.g., *"Make the sky in this image red"*) is handed over as well, but only when **Image Edit** is enabled in the admin settings.
+
+This approach allows the model to "reason" about the prompt before generating, or even generate multiple images as part of a complex request.
+
+
+
+:::info
+**Legacy "Generate Image" Button:**
+Open WebUI has no button that generates an image from a message's content. To add one, use the community-built **[Generate Image Action](https://openwebui.com/posts/3fadc3ca-c955-4c9e-9582-7438f0911b62)**.
+:::
+
+## Restoring the "Generate Image" Button
+
+If you prefer the workflow where you can click a button on any message to generate an image from its content, you can easily restore it:
+
+1. Visit the **[Generate Image Action](https://openwebui.com/posts/3fadc3ca-c955-4c9e-9582-7438f0911b62)** on the Open WebUI Community site.
+2. Click **Get** to import it into your local instance (or copy the code and paste it into your local instance).
+3. Once imported, go to **Admin Panel** > **Functions** and ensure the **Generate Image** action is enabled.
+
+This action adds a "Generate Image" icon to the message action bar, allowing you to generate images directly from LLM responses, which is helpful if you want the assistant to first iterate on the image prompt and generate it once you are satisfied.
+
+
+:::info
+**Requirement:** Image editing runs through the same conditions listed at the top of this page. To use **Image Editing** or **Image+Image Generation**, also turn on **Image Edit** in **Settings** > **Images** (admin section), with a connection that has **Edit** as a capability (OpenAI compatible, Gemini or ComfyUI with an edit workflow) and a model that supports inpainting or img2img.
+:::
+
+## Image Editing (Inpainting)
+
+You can edit an image by providing the image and a text prompt directly in the chat.
+
+1. **Upload an image** to the chat.
+2. **Enter a prompt** describing the change you want to make (e.g., "Change the background to a sunset" or "Add a hat").
+3. The model will generate a new version of the image based on your prompt.
+
+With an [Open Terminal](/features/open-terminal) that an administrator added, or a [Tether](/ecosystem/tether) terminal, selected in the chat, the model can also edit any image stored in that terminal, whatever [Chat Uploads](/features/open-terminal/setup/connecting#chat-uploads) is set to. It passes their absolute paths to `edit_image`, and Open WebUI reads them from that terminal with your access to it, in the same workspace the chat uses. Each image must be a PNG, JPEG, WebP or GIF of at most 25 megapixels and 50 MB.
+
+## Image Compositing (Multi-Image Fusion)
+
+Seamlessly combine multiple images into a single cohesive scene, a process professionally known as **Image Compositing** or **Multi-Image Fusion**. This allows you to merge elements from different sources (e.g., placing a subject from one image into the background of another) while harmonizing lighting, perspective, and style.
+
+1. **Upload images** to the chat (e.g., upload an image of a subject and an image of a background).
+2. **Enter a prompt** describing the desired composition (e.g., "Combine these images to show the cat sitting on the park bench, ensuring consistent lighting").
+3. The model will generate a new composite image that fuses the elements according to your instructions.

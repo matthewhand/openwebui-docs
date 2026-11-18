@@ -1,4 +1,3 @@
-
 # Using Podman
 
 Podman is a daemonless container engine for developing, managing, and running OCI Containers.
@@ -8,7 +7,7 @@ Podman is a daemonless container engine for developing, managing, and running OC
 - **Run a Container:**
 
   ```bash
-  podman run -d --name openwebui -p 3000:8080 ghcr.io/open-webui/open-webui:main
+  podman run -d --name openwebui -p 3000:8080 -v open-webui:/app/backend/data -e WEBUI_SECRET_KEY=your-secret-key ghcr.io/open-webui/open-webui:main
   ```
 
 - **List Running Containers:**
@@ -19,10 +18,54 @@ Podman is a daemonless container engine for developing, managing, and running OC
 
 ## Networking with Podman
 
-If networking issues arise, you may need to adjust your network settings:
+If networking issues arise (specifically on rootless Podman), you may need to adjust the network bridge settings.
+
+:::warning Slirp4netns Deprecation
+Older Podman instructions often recommended `slirp4netns`. However, `slirp4netns` is being **deprecated** and will be removed in **Podman 6**. 
+
+The modern successor is **[pasta](https://passt.top/passt/about/)**, which is the default in Podman 5.0+.
+:::
+
+### Accessing the Host (Local Services)
+
+If you are running Ollama or other services directly on your host machine, use the special DNS name **`host.containers.internal`** to point to your computer.
+
+#### Modern Approach (Pasta - Default in Podman 5+)
+No special flags are usually needed to access the host via `host.containers.internal`.
+
+#### Legacy Approach (Slirp4netns)
+If you are on an older version of Podman and `pasta` is not available:
+1. Ensure you have [slirp4netns installed](https://github.com/rootless-containers/slirp4netns).
+2. Start the container with the following flag to allow host loopback:
 
 ```bash
---network=slirp4netns:allow_host_loopback=true
+podman run -d --network=slirp4netns:allow_host_loopback=true --name openwebui -p 3000:8080 -v open-webui:/app/backend/data -e WEBUI_SECRET_KEY=your-secret-key ghcr.io/open-webui/open-webui:main
 ```
 
+### Connection Configuration
+Once inside Open WebUI, go to your avatar > **Settings > Connections** (admin section) and set your Ollama API connection to:
+`http://host.containers.internal:11434`
+
+To have it set before the first start instead, add `-e OLLAMA_BASE_URL=http://host.containers.internal:11434` to the `podman run` command. The image's default, `http://host.docker.internal:11434`, does not resolve under Podman.
+
 Refer to the Podman [documentation](https://podman.io/) for advanced configurations.
+
+## Uninstall
+
+To uninstall Open WebUI running with Podman, follow these steps:
+
+1.  **Stop and Remove the Container:**
+    ```bash
+    podman rm -f openwebui
+    ```
+
+2.  **Remove the Image (Optional):**
+    ```bash
+    podman rmi ghcr.io/open-webui/open-webui:main
+    ```
+
+3.  **Remove the Volume (Optional, WARNING: Deletes all data):**
+    If you want to completely remove your data (chats, settings, etc.):
+    ```bash
+    podman volume rm open-webui
+    ```

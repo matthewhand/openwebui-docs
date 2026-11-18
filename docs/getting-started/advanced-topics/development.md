@@ -1,201 +1,192 @@
 ---
-sidebar_position: 5
-title: "🛠️ Development Guide"
+sidebar_position: 10
+title: "Developing Open WebUI"
 ---
 
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
-import { TopBanners } from "@site/src/components/TopBanners";
+# Developing Open WebUI
 
-<TopBanners />
+:::danger Work on `dev`, never on `main`
+`dev` is the pre-release branch, and everything lands there first. Every fix and every feature goes to `dev` and stays there, so a bug fixed today is on `dev` today and reaches `main` at the next release. `main` is a snapshot of `dev` taken on release day, which means building from `main` gives you code that is already behind.
 
-# 🛠️ Development Setup Guide
+A fresh `git clone` puts you on `main`. Switch before you do anything else:
 
-Welcome to the **Open WebUI Development Setup Guide!** Whether you're a novice or an experienced developer, this guide will help you set up a **local development environment** for both the frontend and backend components. Let’s dive in! 🚀
+```bash
+git clone https://github.com/open-webui/open-webui.git
+cd open-webui
+git checkout dev
+```
 
-## System Requirements
+Pull requests are opened against `dev` as well. One opened against `main` has to be redone.
+:::
 
-- **Operating System**: Linux (or WSL on Windows) or macOS  
-- **Python Version**: Python 3.11+  
-- **Node.js Version**: 20.10+
+**Run Open WebUI from source for development and testing.**
 
-## Development Methods
+This guide covers setting up a local development environment with the frontend (SvelteKit) and backend (Python/FastAPI) running side by side. You will need two terminal sessions, one for each.
 
-<Tabs groupId="dev-setup">
+:::tip Don't need a full dev environment?
+Run the `:dev` pre-release image instead. It is the same code, rebuilt nightly as changes land, with nothing for you to build:
 
-<TabItem value="local" label="Local Setup">
+```bash
+docker run -d -p 3001:8080 --add-host=host.docker.internal:host-gateway -v open-webui-dev:/app/backend/data -e WEBUI_SECRET_KEY=your-secret-key --name open-webui-dev --restart always ghcr.io/open-webui/open-webui:dev
+```
 
-### 🐧 Local Development Setup
-
-1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/open-webui/open-webui.git
-   cd open-webui
-   ```
-
-2. **Frontend Setup**:
-   - Create a `.env` file:
-     ```bash
-     cp -RPp .env.example .env
-     ```
-   - Install dependencies:
-     ```bash
-     npm install
-     ```
-   - Start the frontend server:
-     ```bash
-     npm run dev
-     ```
-     🌐 Available at: [http://localhost:5173](http://localhost:5173).
-
-3. **Backend Setup**:
-   - Navigate to the backend:
-     ```bash
-     cd backend
-     ```
-   - Use **Conda** for environment setup:
-     ```bash
-     conda create --name open-webui python=3.11
-     conda activate open-webui
-     ```
-   - Install dependencies:
-     ```bash
-     pip install -r requirements.txt -U
-     ```
-   - Start the backend:
-     ```bash
-     sh dev.sh
-     ```
-     📄 API docs available at: [http://localhost:8080/docs](http://localhost:8080/docs).
-
-</TabItem>
-
-<TabItem value="docker" label="Docker Setup">
-
-### 🐳 Docker-Based Development Setup
-
-1. **Create the Docker Compose File**:
-   ```yaml
-   name: open-webui-dev
-
-   services:
-     frontend:
-       build:
-         context: .
-         target: build
-       command: ["npm", "run", "dev"]
-       depends_on:
-         - backend
-       ports:
-         - "3000:5173"
-       extra_hosts:
-         - host.docker.internal:host-gateway
-       volumes:
-         - ./src:/app/src
-
-     backend:
-       build:
-         context: .
-         target: base
-       command: ["bash", "dev.sh"]
-       env_file: ".env"
-       environment:
-         - ENV=dev
-         - WEBUI_AUTH=False
-       ports:
-         - "8080:8080"
-       extra_hosts:
-         - host.docker.internal:host-gateway
-       volumes:
-         - ./backend:/app/backend
-         - data:/app/backend/data
-
-   volumes:
-     data: {}
-   ```
-
-2. **Start the Development Containers**:
-   ```bash
-   docker compose -f compose-dev.yaml up --watch
-   ```
-
-3. **Stop the Containers**:
-   ```bash
-   docker compose -f compose-dev.yaml down
-   ```
-
-</TabItem>
-<TabItem value="conda" label="Optional Conda Setup">
-
-### Conda Environment Setup
-
-If you prefer using **Conda** for isolation:
-
-1. **Create and Activate the Environment**:
-   ```bash
-   conda create --name open-webui-dev python=3.11
-   conda activate open-webui-dev
-   ```
-
-2. **Install Dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Run the Servers**:
-   - Frontend:
-     ```bash
-     npm run dev
-     ```
-   - Backend:
-     ```bash
-     sh dev.sh
-     ```
-
-</TabItem>
-
-<TabItem value="troubleshooting" label="Troubleshooting">
-
-## 🐛 Troubleshooting
-
-### **FATAL ERROR: Reached Heap Limit**
-
-If you encounter memory-related errors during the build, increase the **Node.js heap size**:
-
-1. **Modify Dockerfile**:
-   ```dockerfile
-   ENV NODE_OPTIONS=--max-old-space-size=4096
-   ```
-
-2. **Allocate at least 4 GB of RAM** to Node.js.
+Testing it and reporting what you find is the lowest-effort way to help, and it is what makes releases good. See [Using the Dev Branch](/getting-started/quick-start#using-the-dev-branch) for the details, and note the separate volume.
+:::
 
 ---
 
-### **Other Issues**
+## Prerequisites
 
-- **Port Conflicts**:  
-   Ensure that no other processes are using **ports 8080 or 5173**.
+| Requirement | Version |
+|-------------|---------|
+| **Python** | 3.11 or 3.12 (see note below; 3.13 not supported yet) |
+| **Node.js** | 22.10+ |
+| **Git** | Any recent version |
 
-- **Hot Reload Not Working**:  
-   Verify that **watch mode** is enabled for both frontend and backend.
+:::info Python version compatibility
+Open WebUI supports **Python 3.11 and 3.12**. **3.13 is not supported yet**: a few of our dependencies still need to ship 3.13-compatible releases, and until they do, installs on 3.13 will fail or break at runtime.
 
-</TabItem>
+- **For production**, use the [Docker image](/getting-started/quick-start) or the **latest Python 3.12**. The Docker image runs Python 3.12 on Debian 13.
+- **3.11 also works** for development and pip installs.
+:::
 
-</Tabs>
+:::warning Separate your data
+Never share your database or data directory between dev and production. Dev builds may include database migrations that are not backward-compatible.
+:::
 
-## Contributing to Open WebUI
+---
 
-### Local Workflow
+## 1. Clone the repository
 
-1. **Commit Changes Regularly** to track progress.
-2. **Sync with the Main Branch** to avoid conflicts:
-   ```bash
-   git pull origin main
-   ```
+```bash
+git clone https://github.com/open-webui/open-webui.git
+cd open-webui
+git checkout dev
+```
 
-3. **Run Tests Before Pushing**:
-   ```bash
-   npm run test
-   ```
+`git checkout dev` is the important line. Without it you are building the last release rather than the current code.
 
-Happy coding! 🎉
+---
+
+## 2. Frontend setup
+
+In your **first terminal**, from the project root:
+
+```bash
+cp -RPp .env.example .env
+npm install
+npm run build
+npm run dev
+```
+
+`npm run build` compiles the frontend and catches build-time errors early. It runs Vite with a 12 GB Node.js heap limit. `npm run dev` then starts the dev server at [http://localhost:5173](http://localhost:5173). It will show a waiting screen until the backend is running.
+
+:::tip
+If `npm install` fails with compatibility warnings, run `npm install --force`.
+:::
+
+---
+
+## 3. Backend setup
+
+In your **second terminal**:
+
+```bash
+cd backend
+```
+
+Create and activate a virtual environment (Conda or venv):
+
+```bash
+# Option A: Conda
+conda create --name open-webui python=3.12
+conda activate open-webui
+
+# Option B: venv
+python3 -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+```
+
+Install dependencies and start the server:
+
+```bash
+pip install -r requirements.txt -U
+sh dev.sh
+```
+
+The backend starts at [http://localhost:8080](http://localhost:8080). API docs are available at [http://localhost:8080/docs](http://localhost:8080/docs).
+
+Refresh the frontend at [http://localhost:5173](http://localhost:5173) and you should see the full application.
+
+---
+
+## Testing from another device
+
+To access your dev instance from a phone or another computer on the same network:
+
+1. Find your machine's LAN IP (e.g., `192.168.1.42`)
+2. Add the origin to CORS in `backend/dev.sh`:
+
+```bash
+export CORS_ALLOW_ORIGIN="http://localhost:5173;http://localhost:8080;http://192.168.1.42:5173"
+```
+
+3. Restart the backend and browse to `http://192.168.1.42:5173`
+
+---
+
+## Troubleshooting
+
+### "FATAL ERROR: Reached Heap Limit"
+
+Node.js is running out of memory. `npm run build` already sets a 12 GB heap limit of its own. For `npm run dev` and other frontend commands, increase the heap size before running them:
+
+```bash
+export NODE_OPTIONS="--max-old-space-size=4096"
+npm run dev
+```
+
+Ensure at least 4 GB of RAM is available.
+
+### Port conflicts
+
+If port `5173` or `8080` is already in use, find the conflicting process:
+
+```bash
+# macOS/Linux
+lsof -i :5173
+
+# Windows (PowerShell)
+Get-Process -Id (Get-NetTCPConnection -LocalPort 5173).OwningProcess
+```
+
+Terminate the process or change the port in `vite.config.js` (frontend) or `dev.sh` (backend).
+
+### Icons not loading (CORS)
+
+If static assets fail to load, configure `CORS_ALLOW_ORIGIN` in `backend/dev.sh` to include your frontend URL. See [CORS configuration](/reference/env-configuration#cors_allow_origin) for details.
+
+### Hot reload not working
+
+1. Verify both dev servers are running without errors
+2. Hard refresh the browser (Ctrl+Shift+R / Cmd+Shift+R)
+3. Reinstall frontend dependencies: `rm -rf node_modules && npm install`
+4. Backend changes may require manually restarting `sh dev.sh`
+
+---
+
+## Contributing workflow
+
+1. **Open a discussion first** at [GitHub Discussions](https://github.com/open-webui/open-webui/discussions/new/choose) before writing code
+2. **Create a branch** from `dev` for your work. Never commit directly to `dev`.
+
+```bash
+git checkout dev
+git pull origin dev
+git checkout -b my-feature-branch
+```
+
+3. **Keep your branch synced** by periodically merging from `dev`
+4. **Submit a pull request** to the `dev` branch with a clear title and description
+
+For contribution guidelines, see [Contributing](/contributing).

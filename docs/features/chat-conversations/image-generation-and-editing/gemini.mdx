@@ -1,0 +1,77 @@
+---
+sidebar_position: 5
+title: "Gemini"
+---
+
+:::warning
+This tutorial is a community contribution and is not supported by the Open WebUI team. It serves only as a demonstration on how to customize Open WebUI for your specific use case. Want to contribute? Check out the contributing tutorial.
+:::
+
+Open WebUI also supports image generation through the **Google AI Studio API** also known as the **Gemini API**.
+
+### Initial Setup
+
+1. Obtain an [API key](https://aistudio.google.com/api-keys) from Google AI Studio - alternatively an API Key from Google Cloud and activate the `Generative Language API` for the project.
+2. You most likely need to create a project and enable the `Generative Language API` in addition to adding billing information, because the image generation API is not available for free.
+
+:::warning
+If you are utilizing a free API key, it is vital to have a payment method on file. The absence of a valid payment method is a frequent cause of errors during the setup process.
+:::
+
+:::tip
+Alternatively, if you are using Vertex AI, you can create an API key in Google Cloud instead of a service account. This key will function correctly, provided it is assigned the appropriate permissions. And given the Generative Language API is enabled for the project.
+:::
+
+### Configuring Open WebUI
+
+1. In Open WebUI, go to **Settings** > **Images** (admin section) and add a connection.
+2. Set **Connection Type** to **Gemini**.
+3. Set **URL** to `https://generativelanguage.googleapis.com/v1beta`.
+4. Enter your Google AI Studio [API key](https://aistudio.google.com/api-keys).
+5. Under **Model IDs**, add the model you wish to use, either an [Imagen model](https://ai.google.dev/gemini-api/docs/imagen#model-versions) or a [Gemini model](https://ai.google.dev/gemini-api/docs/image-generation).
+6. Open **Advanced** and set **Endpoint Method** to match that model: `predict` for Imagen, `generateContent` for Gemini.
+7. Set **Access Control** and click **Save**. Without a grant, only admins can use the connection.
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+### Example Minimal Setup
+
+<Tabs>
+  <TabItem value="gemini-3-pro" label="Gemini 3 Pro Image (aka Nano Banana Pro)" default>
+
+- **Model IDs**: `gemini-3-pro-image`
+- **Endpoint Method**: `generateContent`
+
+</TabItem>
+  <TabItem value="gemini-3.1-flash" label="Gemini 3.1 Flash Image (aka Nano Banana 2)">
+
+- **Model IDs**: `gemini-3.1-flash-image`
+- **Endpoint Method**: `generateContent`
+
+</TabItem>
+</Tabs>
+
+:::info
+
+Imagen and Gemini models are served from different endpoints, so **Endpoint Method** has to match the model you entered.
+
+Imagen models use `predict`:
+
+- `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict`.
+- [Documentation for Imagen models](https://ai.google.dev/gemini-api/docs/imagen)
+
+Gemini models use `generateContent`:
+
+- `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image:generateContent`.
+- [Documentation for Gemini models](https://ai.google.dev/gemini-api/docs/image-generation)
+
+Leaving it on the default uses `predict`, so a Gemini model such as `gemini-3-pro-image` fails until you switch it to `generateContent`.
+
+`400: [ERROR: models/gemini-3-pro-image is not found for API version v1beta, or is not supported for predict. Call ListModels to see the list of available models and their supported methods.]`
+
+:::
+
+### LiteLLM Proxy with Gemini Endpoints
+
+A LiteLLM proxy that serves Gemini or Imagen models is added as an **OpenAI compatible** connection. See [LiteLLM Proxy](/features/chat-conversations/image-generation-and-editing/openai#litellm-proxy-with-openai-endpoints).

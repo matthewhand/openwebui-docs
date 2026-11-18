@@ -1,0 +1,233 @@
+---
+sidebar_position: 3
+title: "Permissions"
+---
+
+Open WebUI provides a flexible permissions system that allows administrators to configure access controls and feature availability for users. This enables fine-grained control over what users can access and modify within the application.
+
+Administrators can manage permissions in two primary ways:
+1.  **Default Permissions:** Set the baseline permissions that apply to all users (including admins) via **Admin Panel > Users > Groups > Default Permissions**.
+2.  **Group Permissions:** Create groups with specific permission overrides via **Admin Panel > Users > Groups** (e.g., a "Power Users" group with access to image generation).
+
+Users with the `Pending` role have no access until approved, `Admin` users have full administrative access, and `User` accounts are subject to the permission system described below.
+
+:::warning RBAC Scope Boundary
+RBAC permissions control what users can do inside Open WebUI.
+
+RBAC does not replace provider-side least-privilege design. For OpenAI-compatible providers/proxies (including LiteLLM), configure credentials with the minimum required scope for your deployment.
+:::
+
+:::info Permission Logic
+Permissions in Open WebUI are **additive**.
+*   A user's effective permissions are the combination of **Global Defaults** and all their **Group Memberships**, including every parent group of the groups they are in (see [Nested Groups](/features/authentication-access/rbac/groups#nested-groups)).
+*   **True takes precedence over False**: If *any* source (Global Default or *any* single Group) grants a permission, the user **will** have that permission.
+*   **No "Deny" ability**: You cannot use a specific group to "take away" a permission that is granted by another group or by the global defaults. To restrict a feature, it must be disabled in the Global Defaults *and* disabled in **all** groups the user belongs to, parent groups included.
+:::
+
+:::tip Best Practice: Principle of Least Privilege
+Since permissions are **additive**, the recommended security strategy is to start with **Restriction**:
+1.  **minimize Global Default Permissions**: Configure the default permissions (**Admin Panel > Users > Groups > Default Permissions**) to include *only* what absolutely every user should have.
+2.  **Grant via Groups**: Create specific groups (e.g., "Creators", "Power Users") to explicitly **grant** advanced features like Image Generation or File Uploads.
+
+This approach ensures that new users don't accidentally get access to sensitive features, while allowing you to easily promote users by simply adding them to the relevant group.
+:::
+
+## Permission Categories
+
+Permissions are organized into five main categories: **Workspace**, **Sharing**, **Chat**, **Features**, and **Settings**.
+
+Some toggles only show while their feature is on for the whole instance, for example **Notes Sharing**, **API Keys** and **Web Search**. A hidden toggle keeps its value. Admins are exempt from every permission on this page.
+
+### 1. Workspace Permissions
+Controls access to the "Workspace" section where users create and manage resources.
+Some permissions are **dependent** on others (e.g., you cannot import models if you cannot access the Models workspace).
+
+| Permission | Description |
+| :--- | :--- |
+| **Models Access** | **(Parent)** Access the **Models** workspace to create or edit custom models. |
+| **Import Models** | *(Requires Models Access)* Ability to import models from JSON/files. |
+| **Export Models** | *(Requires Models Access)* Ability to export models to files. |
+| **Hidden Models** | *(Requires Models Access)* Ability to pick hidden models as the base model of a workspace model ([`USER_PERMISSIONS_WORKSPACE_MODELS_HIDDEN`](/reference/env-configuration#user_permissions_workspace_models_hidden)). Off by default. |
+| **Knowledge Access** | Access the **Knowledge** workspace to manage knowledge bases. |
+| **Prompts Access** | **(Parent)** Access the **Prompts** workspace to manage custom system prompts. |
+| **Import Prompts** | *(Requires Prompts Access)* Ability to import prompts. |
+| **Export Prompts** | *(Requires Prompts Access)* Ability to export prompts. |
+| **Tools Access** | **(Parent)** Access the **Tools** workspace to manage functions/tools. Hidden, along with its Import and Export sub-toggles, when [`ENABLE_PLUGINS`](/reference/env-configuration#enable_plugins) or [`ENABLE_TOOLS`](/reference/env-configuration#enable_tools) is `false`, since the Tools workspace does not exist in that case. |
+| **Import Tools** | *(Requires Tools Access)* Ability to import tools. See [Version history](/features/extensibility/plugin/tools#version-history) for how it affects code changes. |
+| **Export Tools** | *(Requires Tools Access)* Ability to export tools. |
+| **Skills Access** | **(Parent)** Access the **Skills** workspace to create and manage reusable instruction sets. Also needed for [`/skills:create`](/features/workspace/skills#from-a-chat-with-skillscreate). |
+| **Import Skills** | *(Requires Skills Access)* Import skills into the Skills workspace (see [Importing skills](/features/workspace/skills#importing-skills) and [Community skills](/features/workspace/skills#community-skills)). |
+| **Export Skills** | *(Requires Skills Access)* Export skills from the Skills workspace (see [Skill Management](/features/workspace/skills#skill-management) and [Community skills](/features/workspace/skills#community-skills)). |
+
+:::danger Tools Access = Root-Equivalent Access
+**Treat the Tools Access permission as root-equivalent access.** Granting a user access to create or import Tools is equivalent to giving them shell access to your server, because Tools and Functions execute arbitrary Python code. Only grant this permission to users you would trust with direct access to your server. If you enable this permission for untrusted users, you are accepting the risk of arbitrary code execution on your host. For full details, see the [Plugin Security Warning](/features/extensibility/plugin/).
+:::
+
+### 2. Sharing Permissions
+Controls what users can share with the community or make public.
+
+Each **(Parent)** permission decides whether a user can share that item type at all. Without it, the **Access** button is hidden and the server refuses sharing changes for that type. The **Public Sharing** and **Allow Sharing With** permissions below decide which audiences a user can add.
+
+A sharing change that asks for an audience the user may not add is refused with `403` (`You do not have permission to share with the requested audience`). Saving an item never changes its sharing. For admins too, folders can never be public, and only chat share links can be open to people without an account.
+
+| Permission | Description |
+| :--- | :--- |
+| **Models Sharing** | **(Parent)** Ability to share models. |
+| **Models Public Sharing** | *(Requires Models Sharing)* Ability to make models publicly discoverable. |
+| **Knowledge Sharing** | **(Parent)** Ability to share knowledge bases. |
+| **Knowledge Public Sharing** | *(Requires Knowledge Sharing)* Ability to make knowledge bases public. |
+| **Prompts Sharing** | **(Parent)** Ability to share prompts. |
+| **Prompts Public Sharing** | *(Requires Prompts Sharing)* Ability to make prompts public. |
+| **Tools Sharing** | **(Parent)** Ability to share tools. |
+| **Tools Public Sharing** | *(Requires Tools Sharing)* Ability to make tools public. |
+| **Skills Sharing** | **(Parent)** Ability to share skills. |
+| **Skills Public Sharing** | *(Requires Skills Sharing)* Ability to make skills public. |
+| **Notes Sharing** | **(Parent)** Ability to share notes. |
+| **Notes Public Sharing** | *(Requires Notes Sharing)* Ability to make Notes public. |
+| **Folders Sharing** | Ability to share chat folders, and the chats inside them, with specific users or groups. See [Sharing Folders](/features/chat-conversations/chat-features/conversation-organization#sharing-folders). |
+| **Chats Public Sharing** | *(Requires Allow Chat Share)* Ability to make a chat share link reachable by every signed-in user of the instance. Opening the link still requires logging in. When disabled, users can still share chats with specific users or groups via the access-control selector, but the "Public" option is hidden for non-admins. Admins are always exempt. |
+| **Chats Open Sharing** | *(Requires Allow Chat Share)* Ability to make a chat share link readable by anyone who has it, without signing in. This is the only permission that exposes content outside the instance. Off by default. See [Open links](/features/chat-conversations/chat-features/chatshare#open-links-no-sign-in). |
+| **Calendars Public Sharing** | *(Requires Features > Calendar)* Ability to make a calendar readable or writable by every user with Calendar. Without it, owners can still share with specific users or groups. |
+| **Allow Sharing With Users** | Ability to share with **specific users** ([`USER_PERMISSIONS_ACCESS_GRANTS_ALLOW_USERS`](/reference/env-configuration#user_permissions_access_grants_allow_users)). |
+| **Allow Sharing With Groups** | Ability to share with **groups** ([`USER_PERMISSIONS_ACCESS_GRANTS_ALLOW_GROUPS`](/reference/env-configuration#user_permissions_access_grants_allow_groups)). |
+
+Every toggle in the panel's **Sharing Permissions** section is off unless you turn it on, and a public toggle is only drawn once the parent permission named in its row is on. The two **Allow Sharing With ...** rows sit in a separate **Access Grants** section and are on by default. With **Allow Sharing With Groups** off, the **Add Access** picker lists no groups. With **Allow Sharing With Users** off, it lists no users.
+
+:::warning Re-check Tools and Notes public sharing after an upgrade
+
+On instances upgraded from a release that predates **Tools Public Sharing** and **Notes Public Sharing**, the admin panel used to draw both switches as on while the backend still refused the action. Saving any permission on that page then persisted them as enabled, granting public tool and note sharing that was never configured. The panel and the enforcement now agree, but a value already written to the database is not rolled back.
+
+If you saved default permissions on an affected release, open **Admin Panel > Users > Groups**, edit **Default permissions** and confirm both switches read the way you intend. Group-level overrides are worth the same check.
+
+:::
+
+### 3. Chat Permissions
+Controls the features available to the user inside the chat interface.
+
+| Permission | Description |
+| :--- | :--- |
+| **Allow Chat Controls** | **(Parent)** Access to advanced chat settings. When disabled, **Controls** in the chat's **Model controls** menu and the **System Prompt** and **Advanced Parameters** sections in **Settings > General** are hidden. [Model controls](/features/workspace/models#using-model-controls-in-chat) stay available, so admins can offer choices such as a thinking level without the full **Controls** section. |
+| **Allow Chat Valves** | *(Requires Allow Chat Controls)* Access to [valves](/features/extensibility/plugin/development/valves) ([`USER_PERMISSIONS_CHAT_VALVES`](/reference/env-configuration#user_permissions_chat_valves)), including a pipe model's **Valves** button in the chat input. |
+| **Allow Chat System Prompt** | *(Requires Allow Chat Controls)* Ability to edit the system prompt for a conversation. |
+| **Allow Chat Params** | *(Requires Allow Chat Controls)* Ability to adjust LLM parameters (e.g., temperature, top_k). When disabled, the **Advanced Params** sections in the chat and in **Settings > General** are hidden. This only hides them: users can still set parameters through the API. That trade-off lets admins hide the panels and still offer [model controls](/features/workspace/models#using-model-controls-in-chat). |
+| **Allow File Upload** | Ability to upload files to the chat. |
+| **Allow Web Upload** | Ability to attach a web page to a chat by URL, using **Attach Webpage** in the message input's attach menu ([`USER_PERMISSIONS_CHAT_WEB_UPLOAD`](/reference/env-configuration#user_permissions_chat_web_upload)). On by default. When disabled, the option is greyed out and the attach is refused. Admins are always exempt. |
+| **Allow Chat Delete** | Ability to delete chats ([`USER_PERMISSIONS_CHAT_DELETE`](/reference/env-configuration#user_permissions_chat_delete)). On by default. When disabled, every chat delete control is hidden, including **Delete All Chats**, and deleting a folder together with its chats is refused. Archiving still works. |
+| **Allow Delete Messages** | Ability to delete individual messages. |
+| **Allow Chat Edit** | Ability to edit messages ([`USER_PERMISSIONS_CHAT_EDIT`](/reference/env-configuration#user_permissions_chat_edit)), both your own and responses. |
+| **Allow Continue Response** | Ability to use the "Continue" feature for truncated responses. |
+| **Allow Regenerate Response**| Ability to regenerate an AI response. |
+| **Allow Rate Response** | Ability to thumbs up/down responses. |
+| **Allow Chat Share** | Ability to generate a share link for a chat ([`USER_PERMISSIONS_CHAT_SHARE`](/reference/env-configuration#user_permissions_chat_share)). See [Allowing Replies](/features/chat-conversations/chat-features/chatshare#allowing-replies) for letting the people you share with reply. |
+| **Allow Chat Export** | Ability to export chats ([`USER_PERMISSIONS_CHAT_EXPORT`](/reference/env-configuration#user_permissions_chat_export)). On by default. When disabled, every option that downloads or copies whole chats is hidden, including folder **Export** and **Export Chats**. |
+| **Allow Chat Import** | Ability to import chats (upload a previously exported chat back into Open WebUI) and to [fork a chat](/features/chat-conversations/chat-features/) or [clone one shared with you](/features/chat-conversations/chat-features/chatshare#cloning-or-forking-a-shared-chat), which copies an existing conversation into a new one ([`USER_PERMISSIONS_CHAT_IMPORT`](/reference/env-configuration#user_permissions_chat_import)). On by default. When disabled, **Import Chats** in **Settings > Data Controls**, the **Clone Chat** button on a shared chat, the **Fork chat** action under an assistant response and the `/fork` entry in the chat input's `/` menu are all hidden from non-admins. Admins are always exempt. |
+| **Allow Speech to Text** | Ability to use voice input. |
+| **Allow Text to Speech** | Ability to use voice output. |
+| **Allow Call** | Ability to start a [Voice Mode](/features/chat-conversations/chat-features/voice-mode) call, in both Standard and Realtime call mode. |
+| **Allow Multiple Models in Chat** | Ability to use several models at once ([`USER_PERMISSIONS_CHAT_MULTIPLE_MODELS`](/reference/env-configuration#user_permissions_chat_multiple_models)). When disabled, chats use only their first model. |
+| **Allow Temporary Chat** | **(Parent)** Ability to toggle "Temporary Chat" (incognito mode/history off). **Note:** Backend document parsing is disabled in this mode for privacy. |
+| **Allow Side Chat** | Ability to open a [side chat](/features/chat-conversations/chat-features/#tabs-side-panel) ([`USER_PERMISSIONS_CHAT_SIDE_CHAT`](/reference/env-configuration#user_permissions_chat_side_chat)). Off by default. Admins always have it. The group permissions form shows its switch only while **Allow Temporary Chat** is on. |
+| **Enforce Temporary Chat** | *(Requires Allow Temporary Chat)* **Restricts** the user to *always* use temporary chat (history disabled) ([`USER_PERMISSIONS_CHAT_TEMPORARY_ENFORCED`](/reference/env-configuration#user_permissions_chat_temporary_enforced)). |
+
+The **Audio** tab in **Settings** needs at least one of **Allow Speech to Text**, **Allow Text to Speech** and **Allow Call**.
+
+### 4. Features Permissions
+Controls access to broad platform capabilities.
+
+| Permission | Description |
+| :--- | :--- |
+| **API Keys** | Ability for non-admin users to generate Personal Access Tokens (API Keys) in User Settings. |
+| **Notes** | Access to the "Notes" feature, including **Attach Notes** in the chat input. |
+| **Channels** | Access to the "Channels" feature ([`USER_PERMISSIONS_FEATURES_CHANNELS`](/reference/env-configuration#user_permissions_features_channels)), including live channel messages and channel automations. |
+| **Encrypted Channels** | Ability to use [encrypted chats](/features/channels/encrypted-chats) in direct messages and private group channels ([`USER_PERMISSIONS_FEATURES_ENCRYPTED_CHANNELS`](/reference/env-configuration#user_permissions_features_encrypted_channels)). Also needs **Channels**. Off by default. |
+| **Folders** | Ability to use folders for organizing chats. |
+| **Web Search** | Ability to use Web Search integration. |
+| **Image Generation** | Ability to use Image Generation tools. With Model IDs set on an AUTOMATIC1111 connection, this also allows switching the server's loaded model for everyone; see the note below. |
+| **Video Generation** | Ability to use [video generation](/features/chat-conversations/image-generation-and-editing/video-generation) ([`USER_PERMISSIONS_FEATURES_VIDEO_GENERATION`](/reference/env-configuration#user_permissions_features_video_generation)). Off by default. Admins always have it. The switch shows while video generation is enabled. |
+| **Code Interpreter** | Ability to use the Python Code Interpreter. Manual code execution (the **Run** button on code blocks) has no permission of its own; it follows [`ENABLE_CODE_EXECUTION`](/reference/env-configuration#enable_code_execution) for everyone. See [Manual Code Execution](/features/chat-conversations/chat-features/code-execution/python#manual-code-execution-pyodide). |
+| **Memories** | Access to the Memories feature for persistent user context. Taking it away hides the **Personalization** settings tab, blocks the memory API endpoints, withholds the memory tools from the model and stops stored memories being injected into the chat's system context. The injection check runs server-side on every chat request, so a client that still asks for memory does not get it. Admins are always exempt. |
+| **Automations** | Ability for non-admin users to access the Automations page and create, edit, run, pause, or delete their own scheduled automations. Anyone who can edit a folder can also pause the automations that post into it. See [Folders](/features/chat-conversations/chat-features/automations#folders). |
+| **Calendar** | Access to the Calendar feature for creating calendars, managing events, and viewing shared calendars. |
+| **Sub-agents** | Ability to use the `delegate_task` and `timer` tools ([`USER_PERMISSIONS_FEATURES_SUBAGENTS`](/reference/env-configuration#user_permissions_features_subagents)). The switch shows while [sub-agents](/features/chat-conversations/chat-features/subagents) are enabled. |
+| **User Webhooks** | Ability for users to set their own personal webhook URL (under **Settings > Account**) for notifications. Disabled by default. |
+
+:::info Image Generation and the Active Model
+
+AUTOMATIC1111 keeps a single checkpoint loaded and generates with whichever one is active. When an AUTOMATIC1111 connection has **Model IDs** set, a user who has access to the connection and picks a model that is not the loaded one switches the loaded checkpoint for everyone using that server until it is switched again. Leave **Model IDs** empty to prevent this.
+
+Other connection types accept a model with each request, so a user's choice applies only to their own generation. Which connections a user can use is set by the connection's **Access Control** in [Image Generation](/features/chat-conversations/image-generation-and-editing#set-up-a-connection).
+
+:::
+
+:::info Automations Permission Scope
+
+For Automations access:
+
+1. **Permission Check for Non-Admins**: Users with the `user` role need **Features > Automations** (`features.automations`).
+2. **Admins Are Exempt from `features.automations`**: Users with the `admin` role can access Automations without that specific permission.
+
+Default permission can be configured via [`USER_PERMISSIONS_FEATURES_AUTOMATIONS`](/reference/env-configuration#user_permissions_features_automations).
+
+:::
+
+:::info Calendar Permission Scope
+
+For Calendar access:
+
+1. **Permission Check for Non-Admins**: Users with the `user` role need **Features > Calendar** (`features.calendar`).
+2. **Admins Are Exempt from `features.calendar`**: Users with the `admin` role can access Calendar without that specific permission.
+3. **Direct Links Redirect**: Without access, opening `/calendar` goes to the home page.
+
+Default permission can be configured via [`USER_PERMISSIONS_FEATURES_CALENDAR`](/reference/env-configuration#user_permissions_features_calendar).
+
+:::
+
+### 5. Settings Permissions
+Controls access to user settings areas.
+
+| Permission | Description |
+| :--- | :--- |
+| **Interface Settings Access** | Ability to access and modify interface settings in user settings. |
+
+:::info Interface Settings Access and instance defaults
+
+Taking this permission away hides the **Interface** page, so the people affected stay on whatever [Default Interface Settings](/features/administration/interface-defaults) you have configured. Leave it on, and those defaults are only a starting point that each person can change. Admins are exempt.
+
+It reaches no further than that. Interface fields in a save from such a user are dropped and the rest is saved, so a system prompt, pinned models, audio, notifications and shortcuts still save. **Allow Chat System Prompt** works the same way for the system prompt.
+
+The one exception is the **default model** a person saves with **Set as default** in the model selector. It is stored as an Interface field, so it stops being saved when this permission is off.
+
+There is no permission that locks personal settings as a whole. This one hides a page and filters that page's fields, nothing more.
+
+:::
+
+:::info API Keys Permission Scope
+
+For API key creation:
+
+1.  **Global Toggle Required**: The feature must be enabled globally in **Settings > Authentication > API Keys** (admin section). If this is off, *no one* can generate keys.
+2.  **Permission Check for Non-Admins**: Users with the `user` role must have the `features.api_keys` permission.
+3.  **Admins Are Exempt from `features.api_keys`**: Users with the `admin` role can generate API keys when API keys are globally enabled, even without that specific permission.
+
+:::
+
+:::tip Best Practice: Create an Admin Group
+
+**To prepare for future permission changes, create a dedicated group for administrators:**
+
+1.  **Create an "Administrators" group** via **Admin Panel > Users > Groups**
+2.  **Add all admin users** to this group
+3.  **Grant user-facing feature permissions** to the group as needed (for example, API Keys for non-admin group members)
+
+This approach ensures that when new permissions are added that apply to admins, you can easily grant them to all administrators via the group rather than modifying individual user settings. It also provides fine-grained control over which admins have access to which features.
+
+:::
+
+## Environment Variables
+
+While the UI is the recommended way to manage permissions, initial defaults can be set via environment variables. These are typically prefixed with `USER_PERMISSIONS_`.
+*   `ENABLE_IMAGE_GENERATION=True`
+*   `ENABLE_WEB_SEARCH=True`
+*   `USER_PERMISSIONS_CHAT_FILE_UPLOAD=True`
+
+See the [Environment Configuration](/reference/env-configuration) guide for a complete list of valid variables.

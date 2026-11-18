@@ -1,80 +1,118 @@
 ---
-sidebar_position: 1000
-title: "🤝 Contributing"
+sidebar_position: 1600
+title: "Contributing"
 ---
 
-import { TopBanners } from "@site/src/components/TopBanners";
+# Contributing
 
-<TopBanners />
+**Help build the AI interface everyone deserves.**
 
-🚀 **Welcome, Contributors!** 🚀
+Open WebUI is an independent project built and maintained by a small, dedicated core team. The most useful ways to contribute are testing dev builds, filing clear bug reports, explaining use cases in Discussions, improving docs, and translating the UI. Maintainers evaluate and develop code changes internally; **code pull requests require an explicit maintainer request**, with an exception for changes limited to i18n/localization. This page explains how to get involved and what to expect.
 
-Your interest in contributing to Open WebUI is greatly appreciated. This document is here to guide you through the process, ensuring your contributions enhance the project effectively. Let's make Open WebUI even better, together!
+---
 
-## 💡 Contributing
+## Code of Conduct
 
-Looking to contribute? Great! Here's how you can help:
+All contributors and community participants must follow the **[Code of Conduct](https://github.com/open-webui/open-webui/blob/main/CODE_OF_CONDUCT.md)**. We operate under a **zero-tolerance policy**: disrespectful, demanding, or hostile behavior results in immediate action without prior warning.
 
-### 🌟 Code Contribution Guidelines
+Open WebUI is led by a small core team and supported by contributors across the project. Treat every interaction with professionalism and respect.
 
-We welcome pull requests. Before submitting one, please:
+---
 
-1. Open a discussion regarding your ideas [here](https://github.com/open-webui/open-webui/discussions/new/choose).
-2. Follow the project's coding standards and include tests for new features.
-3. Update documentation as necessary.
-4. Write clear, descriptive commit messages.
+## Ways to Contribute
 
-### 🛠 Code PR Best Practices:
+### Test the development branch
 
-1. **Atomic PRs:** Make sure your PRs are small, focused, and deal with a single objective or task. This helps in easier code review and limits the chances of introducing unrelated issues. If the scope of changes grows too large, consider breaking them into smaller, logically independent PRs.
-2. **Follow Existing Code Convention:** Ensure your code aligns with the existing coding standards and practices of the project.
-3. **Avoid Additional External Dependencies:** Do not include additional external dependencies without prior discussion.
-4. **Framework Agnostic Approach:** We aim to stay framework agnostic. Implement functionalities on our own whenever possible rather than relying on external frameworks or libraries. If you have doubts or suggestions regarding this approach, feel free to discuss it.
+One of the most valuable contributions requires no code at all. Run the dev branch, use it daily, and report what breaks.
 
-Thank you for contributing! 🚀
+```bash
+docker run -d -p 3000:8080 -v open-webui:/app/backend/data --name open-webui ghcr.io/open-webui/open-webui:dev
+```
 
-### 📚 Documentation & Tutorials
+The dev branch moves fast, so **pull updates regularly**. If Docker is not your preference, follow the [Developing Open WebUI](/getting-started/advanced-topics/development) instead.
 
-Help us make Open WebUI more accessible by improving documentation, writing tutorials, or creating guides on setting up and optimizing the web UI.
+Report issues on [GitHub](https://github.com/open-webui/open-webui/issues) with clear reproduction steps. Community testing helps us deliver high-quality releases.
 
-### 🌐 Translations and Internationalization
+### Submit code
 
-Help us make Open WebUI available to a wider audience. In this section, we'll guide you through the process of adding new translations to the project.
+We develop and refine solutions internally because external implementations usually require substantial reworking to fit the project. **We accept code PRs only when we have explicitly requested them, or when the changes are limited to i18n/localization.** This requirement covers bug fixes, features, refactors, dependency changes, UI changes, and test-only changes, regardless of patch size, passing checks, or whether the code was written by hand or with AI assistance. An acknowledged bug or a positive response to an idea is not a request for an implementation. PRs opened outside this process are **generally closed without review**.
 
-We use JSON files to store translations. You can find the existing translation files in the `src/lib/i18n/locales` directory. Each directory corresponds to a specific language, for example, `en-US` for English (US), `fr-FR` for French (France) and so on. You can refer to [ISO 639 Language Codes](http://www.lingoes.net/en/translator/langcode.htm) to find the appropriate code for a specific language.
+**We monitor and verify every issue**, and **often already have a working solution internally** that has not been pushed while we evaluate and refine the approach. An issue remaining open, without a public response or linked PR, does not mean it has gone unnoticed or that implementation work is available to take on. A working fix still needs to fit the project's architecture, existing behavior, and ongoing work. That evaluation regularly changes the scope and location of the solution: a symptom in the interface might originate in shared state, an API contract, or provider-specific behavior, while a new setting might accommodate one workflow at the expense of others. Resolving the immediate symptom is only part of the work. Public repository activity does not show every investigation or implementation in progress, and unsolicited PRs often duplicate work already underway while introducing another approach to reconcile. Maintainers need room to complete that evaluation before publishing the result.
+
+The explicit-request requirement establishes who decides what implementation work enters the project and when. An unsolicited PR arrives with a scope, design, and set of tradeoffs already embedded in code, before maintainers have agreed that those are the decisions the project should make. Reviewing it turns an open design question into a negotiation over an existing implementation. The author's investment then creates pressure to preserve that approach, even when the right outcome is a different design, a smaller change, or no addition at all. We need to make those decisions from the project's requirements. A maintainer request establishes that we have identified useful outside work and **agreed on its purpose and scope before someone invests in it**.
+
+This is why **the requirement applies even to excellent code**. If every unsolicited PR qualified for review on the grounds that it might be useful, we would have to perform that review to decide whether the requirement applied. The submission rule would accomplish nothing. We do not operate a general review queue for independently chosen implementations. We select work according to the project's priorities and request contributions where they serve that work. A clean diff, passing checks, or an offer to make revisions cannot substitute for that decision. This remains our development process even when review capacity is available.
+
+Reviewing an external implementation, explaining the required changes, and coordinating successive revisions **usually takes more effort than developing the solution internally**. Fragmented commit histories, branches that have not been rebased, unresolved conflicts, unrelated edits, and unverified AI-generated explanations add further work. Maintainers still have to reconstruct the assumptions, assess the wider effects, and understand the final implementation well enough to own it. That work draws on the same attention needed for regressions, security fixes, and releases. The requirement prevents unplanned implementation review from determining how that attention is spent.
+
+**Once code ships, the team owns its behavior across future releases.** We must preserve compatibility where needed, diagnose failures, maintain documentation and regression coverage, and adapt the change as the surrounding system evolves. Each new dependency, setting, and abstraction adds to that responsibility, and users build workflows around the behavior we accept. Removing an unsuitable change later brings its own compatibility and migration costs. The people accountable for those consequences must decide which commitments the project takes on before implementation begins. Exceptional work is considered at the maintainers' initiative; contributors should not treat their own assessment of a patch as permission to bypass the process.
+
+**We also require an explicit request for new or rewritten automated tests**, including fixtures, snapshots, and testing infrastructure. A request to implement a fix does not include a request to add a test suite. When code and tests are generated from the same assumptions, they can agree with each other while both being wrong about the intended behavior. Assertions derived from current output can preserve a mistake; mocks can remove the integration where the failure occurs; snapshots can record incorrect results. Tests tied to internal function calls can obstruct a sound refactor without detecting a user-facing regression. **Passing such tests creates a false sense of safety**, while more assertions and higher coverage say little about whether the right behavior was checked.
+
+Those tests become another implementation to investigate, rewrite, and maintain. We must verify their expected results, assumptions, and ability to detect the original failure before relying on them. Maintainers choose durable regression coverage internally after establishing the intended behavior and request outside test work when it serves that plan. For a requested PR, **provide reproducible evidence from the running application**: setup, exact steps, expected behavior, and observed results before and after the change. Include relevant logs, screenshots, or recordings, run existing checks relevant to the change, and report failures and anything you could not verify. Do not remove, disable, or weaken existing tests to make a change pass. Neither manual verification nor a passing suite replaces review of the approach and its wider effects.
+
+**Public source code and contribution intake are separate project decisions.** [SQLite describes itself as “Open-Source, not Open-Contribution”](https://www.sqlite.org/copyright.html): its restrictions preserve the public-domain status of its code, and its documentation explains that proof-of-concept patches can be rewritten from scratch. SQLite has a formal process for accepting contributed code. The parallel is that useful reports and reference implementations can inform a solution while maintainers retain control of what ships. Open WebUI's reasons concern development capacity, architectural consistency, and long-term ownership; SQLite's public-domain requirements are specific to SQLite.
+
+[tldraw's January 2026 policy announcement](https://github.com/tldraw/tldraw/issues/7695) described closing external PRs and selectively reopening work under consideration, citing AI-generated submissions, incomplete context, and limited author follow-up. Its [contribution guide](https://github.com/tldraw/tldraw/blob/main/CONTRIBUTING.md) directs people to issues and branch references while stating that it is not accepting contributions. [Clojure's development policy](https://clojure.org/dev/dev) accepts patches through its own process, but assigns direction to its core team and asks feature proposals to establish the problem and compare alternatives before moving to implementation. These are distinct policies with different governance and licensing arrangements. They illustrate how community input informs a project while maintainers determine its design and contribution process. Open WebUI retains a path for explicitly requested work and localization contributions.
+
+**If you genuinely want to help Open WebUI, make the project's needs and the maintainers' ability to act on your contribution the measure of its value.** A precise reproduction, a carefully investigated report, or a useful explanation of a workflow can improve the project without producing a merged PR under your name. Be prepared for maintainers to solve the problem differently, implement the solution internally, or decide that a proposed change does not belong in the project. **Helping means supporting that outcome even when your code is not used.** Submit reproducible bugs through [Issues](https://github.com/open-webui/open-webui/issues) and proposals through [Discussions](https://github.com/open-webui/open-webui/discussions/new/choose). Search existing reports, check the current release and `dev`, and provide the affected workflow, expected and actual results, and relevant evidence. Report security concerns through the [private security reporting process](https://github.com/open-webui/open-webui/security). Share implementation notes, local diffs, patches, or branch references in the relevant report when they clarify the problem; do not open a PR to obtain attention for reference code. Follow up with useful evidence and respect the team's priorities. Reports do not guarantee a response, implementation, or timeline, and repeated bumps or duplicate submissions take time away from the work.
+
+When we request a PR, the purpose is to complete work the project has agreed it needs. Keep that purpose ahead of personal preferences about the implementation, the size of your contribution, or securing a merge. Follow the [pull request template](https://github.com/open-webui/open-webui/blob/main/.github/pull_request_template.md), target `dev`, complete the Contributor License Agreement, and link the maintainer's request in the **Maintainer Request** section. Follow existing patterns, document verification, and **stay within the agreed scope**. Return to the discussion if the approach needs to change, and accept that review can result in a rewrite or a decision not to proceed. An invitation does not authorize unrelated changes or unsolicited tests, and **it does not guarantee acceptance**. For i18n/localization PRs, state that the work is limited to localization; this standing exception recognizes language knowledge that helps users within the existing translation system. It does not extend to unrelated behavior, refactors, or dependencies bundled with translations. Respecting these boundaries, including a decision to close a submission, is part of contributing. Reopening a declined PR or splitting it into smaller submissions to seek a different outcome works against that purpose.
+
+### Improve documentation
+
+Help make Open WebUI more accessible by improving docs, writing tutorials, or creating setup guides. Documentation lives in the [docs repository](https://github.com/open-webui/docs).
+
+### Translate the UI
+
+PRs limited to i18n/localization do not require a maintainer request. Open WebUI uses JSON translation files in `src/lib/i18n/locales`. Each subdirectory is named with an [ISO 639 language code](http://www.lingoes.net/en/translator/langcode.htm) (e.g., `en-US`, `fr-FR`).
+
+If you're a native speaker of a language Open WebUI already ships, corrections are as welcome as new translations. When a label in your language reads wrong, sounds unnatural, or uses the wrong term, fix it in that language's `translation.json` and open a PR with only those changes.
 
 To add a new language:
 
-- Create a new directory in the `src/lib/i18n/locales` path with the appropriate language code as its name. For instance, if you're adding translations for Spanish (Spain), create a new directory named `es-ES`.
-- Copy the American English translation file(s) (from `en-US` directory in `src/lib/i18n/locale`) to this new directory and update the string values in JSON format according to your language. Make sure to preserve the structure of the JSON object.
-- Add the language code and its respective title to languages file at `src/lib/i18n/locales/languages.json`.
+1. Create a new directory under `src/lib/i18n/locales` named with the appropriate language code
+2. Copy the `en-US` translation files into the new directory
+3. Translate the string values in each JSON file while preserving the object structure
+4. Register the language in `src/lib/i18n/locales/languages.json`
 
-### 🤔 Questions & Feedback
+In `en-US`, many values are empty because the key is already the English text. For those entries, translate the key and write the result as the value.
 
-Got questions or feedback? Join our [Discord community](https://discord.gg/5rJgQTnV4s) or open an issue. We're here to help!
+### Improve accessibility
 
-### 🚨 Reporting Issues
+Accessibility is a core part of good design. Report accessibility problems with reproduction details through Issues. When implementing a maintainer-requested UI change:
 
-Noticed something off? Have an idea? Check our [Issues tab](https://github.com/open-webui/open-webui/issues) to see if it's already been reported or suggested. If not, feel free to open a new issue. When reporting an issue, please follow our issue templates. These templates are designed to ensure that all necessary details are provided from the start, enabling us to address your concerns more efficiently.
+| Principle | What to do |
+|-----------|-----------|
+| **Semantic HTML** | Use `<button>`, `<label>`, `<nav>`, and other semantic elements instead of generic `<div>` wrappers |
+| **Keyboard navigation** | Ensure all interactive elements work without a mouse |
+| **ARIA labels** | Add [ARIA](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA) roles and labels where semantic HTML alone is insufficient |
+| **Color contrast** | Verify contrast ratios with [WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/) |
+| **Alt text** | Provide descriptive `alt` for meaningful images; use `alt=""` for decorative ones |
 
-:::important
+Test your changes with Lighthouse or your browser's accessibility tools.
 
-- **Template Compliance:** Please be aware that failure to follow the provided issue template, or not providing the requested information at all, will likely result in your issue being closed without further consideration. This approach is critical for maintaining the manageability and integrity of issue tracking.
+---
 
-- **Detail is Key:** To ensure your issue is understood and can be effectively addressed, it's imperative to include comprehensive details. Descriptions should be clear, including steps to reproduce, expected outcomes, and actual results. Lack of sufficient detail may hinder our ability to resolve your issue.
+## Reporting Issues
 
+Check the [Issues tab](https://github.com/open-webui/open-webui/issues) before opening a new one. When filing:
+
+- **Use the issue template.** Issues that do not follow the template or lack requested information will be closed.
+- **Include reproduction steps.** Describe what you did, what you expected, and what actually happened.
+- **Be specific.** Vague reports ("it doesn't work") cannot be investigated effectively.
+
+:::warning Scope of support
+Open WebUI supports Docker deployment, but we assume familiarity with Docker fundamentals. Issues related to reverse proxy configuration, container networking, or host OS setup are outside the project's support scope. Refer to the [official Docker documentation](https://docs.docker.com/get-started/overview/) for those topics.
 :::
 
-### 🧭 Scope of Support
+---
 
-We've noticed an uptick in issues not directly related to Open WebUI but rather to the environment it's run in, especially Docker setups. While we strive to support Docker deployment, understanding Docker fundamentals is crucial for a smooth experience.
+## Get in Touch
 
-- **Docker Deployment Support**: Open WebUI supports Docker deployment. Familiarity with Docker is assumed. For Docker basics, please refer to the [official Docker documentation](https://docs.docker.com/get-started/overview/).
-
-- **Advanced Configurations**: Setting up reverse proxies for HTTPS and managing Docker deployments requires foundational knowledge. There are numerous online resources available to learn these skills. Ensuring you have this knowledge will greatly enhance your experience with Open WebUI and similar projects.
-
-## 🙏 Thank You!
-
-Your contributions, big or small, make a significant impact on Open WebUI. We're excited to see what you bring to the project!
-
-Together, let's create an even more powerful tool for the community. 🌟
+| Channel | Link |
+|---------|------|
+| **Discord** | [discord.gg/5rJgQTnV4s](https://discord.gg/5rJgQTnV4s) |
+| **Reddit** | [r/OpenWebUI](https://www.reddit.com/r/OpenWebUI/) |
+| **GitHub Issues** | [open-webui/open-webui/issues](https://github.com/open-webui/open-webui/issues) |
+| **GitHub Discussions** | [open-webui/open-webui/discussions](https://github.com/open-webui/open-webui/discussions) |

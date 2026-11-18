@@ -1,0 +1,331 @@
+---
+sidebar_position: 10
+title: "Reasoning & Thinking Models"
+---
+
+
+# Reasoning & Thinking Models
+
+Open WebUI provides first-class support for models that exhibit "thinking" or "reasoning" behaviors (such as DeepSeek R1, OpenAI o1, and others). These models often generate internal chains of thought before providing a final answer.
+
+## How Thinking Tags Work
+
+When a model generates reasoning content, it typically wraps that content in specific XML-like tags (e.g., `<think>...</think>` or `<thought>...</thought>`). 
+
+Open WebUI automatically:
+1.  **Detects** these tags in the model's output stream.
+2.  **Extracts** the content between the tags.
+3.  **Renders** the extracted content in a collapsible UI element labeled "Thought" or "Thinking".
+
+This keeps the main chat interface clean while still giving you access to the model's internal processing.
+
+## The `reasoning_tags` Parameter
+
+You can customize which tags Open WebUI should look for using the `reasoning_tags` parameter. This can be set on a **per-chat** or **per-model** basis.
+
+### Default Tags
+By default, Open WebUI looks for several common reasoning tag pairs:
+- `<think>`, `</think>`
+- `<thinking>`, `</thinking>`
+- `<reason>`, `</reason>`
+- `<reasoning>`, `</reasoning>`
+- `<thought>`, `</thought>`
+- `<|begin_of_thought|>`, `<|end_of_thought|>`
+
+### Customization
+If your model uses different tags, you can provide a list of tag pairs in the `reasoning_tags` parameter. Each pair is a tuple or list of the opening and closing tag.
+
+## Configuration & Behavior
+
+- **Stripping from Payload**: The `reasoning_tags` parameter itself is an Open WebUI-specific control and is **stripped** from the payload before being sent to the LLM backend (OpenAI, Ollama, etc.). This ensures compatibility with providers that do not recognize this parameter.
+- **Chat History**: Reasoning is kept in chat history. Whether it is sent back to the model depends on the connection; see [How Reasoning Is Sent Back](#how-reasoning-is-sent-back).
+- **UI Rendering**: Internally, reasoning blocks are processed and rendered using a specialized UI component. When saved or exported, they may be represented as HTML `<details type="reasoning">` tags.
+
+---
+
+## Open WebUI Settings
+
+Open WebUI provides several built-in settings to configure reasoning model behavior. These can be found in:
+
+- **Model controls** (next to the message input) → **Controls** → **Advanced Params**: per-chat settings
+- **Workspace** → **Models** → **Edit Model** → **Advanced Parameters**: per-model settings (Admin only)
+- **Settings** → **Models** → select a model → **Advanced Parameters** (admin section): alternative per-model settings location
+
+### Reasoning Tags Setting
+
+This setting controls how Open WebUI parses and displays thinking/reasoning blocks:
+
+| Option | Description |
+|--------|-------------|
+| **Default** | Uses the system default behavior |
+| **Enabled** | Explicitly enables reasoning tag detection using default `<think>...</think>` tags |
+| **Disabled** | Turns off reasoning tag detection entirely |
+| **Custom** | Allows you to specify custom start and end tags |
+
+#### Using Custom Tags
+
+If your model uses non-standard reasoning tags (e.g., `<reasoning>...</reasoning>` or `[思考]...[/思考]`), select **Custom** and enter:
+
+- **Start Tag**: The opening tag (e.g., `<reasoning>`)
+- **End Tag**: The closing tag (e.g., `</reasoning>`)
+
+This is useful for:
+- Models with localized thinking tags
+- Custom fine-tuned models with unique tag formats
+- Models that use XML-style reasoning markers
+
+### think (Ollama)
+
+This Ollama-specific setting controls the model's built-in reasoning feature. Ollama has separated thinking from the answer natively since v0.9.0, so there is no server-side flag to set:
+
+| Option | What is sent | Description |
+|--------|--------------|-------------|
+| **Default** | nothing | Uses Ollama's default behavior, which is thinking on for models that support it |
+| **On** | `think: true` | Explicitly enables thinking mode for the model |
+| **Custom** | `think: "low"`, `"medium"`, `"high"` or `"max"` | Sets a thinking level. GPT-OSS accepts only a level, never `true` |
+| **Off** | `think: false` | Disables thinking mode |
+
+:::note
+This setting sends the `think` parameter directly to Ollama, which returns the trace in a separate `thinking` field that Open WebUI reads as reasoning (see [How Reasoning Is Sent Back](#how-reasoning-is-sent-back)). It's separate from how Open WebUI parses `<think>` tags in text, which only matters for models that write their reasoning inline.
+:::
+
+### Reasoning Effort
+
+For models that support variable reasoning depth (like some API providers), this setting controls how much effort the model puts into reasoning:
+
+- Common values: `low`, `medium`, `high`
+- Some providers accept numeric values
+
+[Coding agents](/features/open-terminal/coding-agents#options) in Open Terminal receive the setting too.
+
+:::info
+Reasoning Effort is only applicable to models from specific providers that support this parameter. It is not forwarded on native Ollama connections, where the `think` setting above covers the same ground. Ollama's OpenAI-compatible endpoint does accept `reasoning_effort` when Ollama is added as an OpenAI connection instead.
+:::
+
+---
+
+## Interleaved Thinking with Tool Calls
+
+When a model uses **native function calling** (tool use) within a single turn, Open WebUI preserves the reasoning content and sends it back to the API for subsequent calls within that turn. This enables true "interleaved thinking" where:
+
+1. Model generates reasoning → makes a tool call
+2. Tool executes and returns results
+3. Model receives: original messages + previous reasoning + tool call + tool result
+4. Model continues reasoning → may make more tool calls or provide final answer
+5. Process repeats until the turn completes
+
+### How It Works
+
+During a multi-step tool calling turn, Open WebUI:
+
+1. **Captures** reasoning from the model's response, from `<think>`-style tags or from `reasoning_content`, `reasoning` or `thinking` fields
+2. **Stores** it alongside the tool calls
+3. **Sends it back** on the next call in the format the connection expects; see [How Reasoning Is Sent Back](#how-reasoning-is-sent-back)
+
+### How Reasoning Is Sent Back
+
+Open WebUI stores reasoning separately from the answer, whether the model wrote it as `<think>`-style tags or sent it in a separate field. When a message is replayed, within a tool-call loop or on the next turn, the reasoning is sent back in the format of the connection's `Provider` setting (**Settings → Connections → OpenAI → Advanced → Provider** (admin section), see [The Provider Setting](/getting-started/quick-start/connect-a-provider/starting-with-openai-compatible#the-provider-setting); Ollama connections are detected automatically). The same rules apply within a turn and across turns. See [Provider Compatibility](#provider-compatibility). With **Stream Chat Response** off, `<think>` tags a model writes inside its reply are stored as reply text, so they go back to the model with it.
+
+Most Chat Completions APIs reject unknown fields on assistant messages, so reasoning text is left out there. Pipe functions and filters can add it back in a provider-specific shape.
+
+Reasoning details that a provider returns in a `reasoning_details` field (as OpenRouter does) are sent back unchanged in that field, within a tool-call loop and on later turns. They are dropped when another model continues the chat.
+
+### Provider Compatibility
+
+| Provider | Reasoning on replay |
+| :--- | :--- |
+| Ollama | Sent back in the `thinking` field |
+| llama.cpp (*Provider* `llama.cpp`) | Sent back as `reasoning_content`. DeepSeek thinking mode needs this setting |
+| OpenAI Responses API | Stored reasoning items sent back. With `ENABLE_RESPONSES_API_STATEFUL` on, `previous_response_id` carries the state |
+| OpenAI / Azure / Vertex AI (Chat Completions, *Provider* `Default`) | Left out (use a pipe or filter to add it back) |
+| Anthropic (extended thinking) | Not supported natively; use a [pipe function](/features/extensibility/plugin/functions/pipe) |
+
+---
+
+## Streaming vs Non-Streaming
+
+### Streaming Mode (Default)
+
+In streaming mode (`stream: true`), Open WebUI processes tokens as they arrive and can detect reasoning blocks in real-time. This generally works well without additional configuration.
+
+Providers that send reasoning metadata alongside the answer rather than before it are handled too: reasoning that arrives after the response has started is folded into the thinking block above the answer instead of appearing beneath it. Metadata without reasoning text opens no thinking block.
+
+### Non-Streaming Mode
+
+In non-streaming mode (`stream: false`), the entire response is returned at once. **This is where most parsing issues occur** because:
+
+1. The response arrives as a single block of text
+2. The `<think>` content is only separated if the tags are detected in the finished text
+3. The raw response is displayed as-is
+
+:::info Important
+If you're using non-streaming requests (via API or certain configurations), **thinking block separation depends on the tags being detected in the full response**, or on the backend returning the reasoning as its own field.
+:::
+
+---
+
+## API Usage
+
+When using the Open WebUI API with reasoning models:
+
+```json
+{
+  "model": "qwen3.6:27b",
+  "messages": [
+    {"role": "user", "content": "Solve: What is 234 * 567?"}
+  ],
+  "stream": true
+}
+```
+
+**Recommendation:** Use `"stream": true` for the most reliable reasoning block parsing.
+
+---
+
+## Troubleshooting
+
+### Thinking Content Merged with Final Answer
+
+**Symptom:** When using a reasoning model, the entire response (including `<think>...</think>` blocks) is displayed as the final answer, instead of being separated into a hidden/collapsible thinking section.
+
+**Example of incorrect display:**
+
+```text
+<think>
+Okay, the user wants a code snippet for a sticky header using CSS and JavaScript.
+Let me think about how to approach this.
+...
+I think that's a solid approach. Let me write the code now.
+</think>
+
+Here's a complete code snippet that demonstrates a sticky header using CSS and JavaScript...
+```
+
+**Expected behavior:** The thinking content should be hidden or collapsible, with only the final answer visible.
+
+### For Ollama Users
+
+Ollama does not take a parser flag. `ollama serve` has no command-line options, and the `--reasoning-parser` flag some guides mention belongs to vLLM. Ollama splits thinking from the answer itself once the `think` parameter is on, and Open WebUI shows that split without any server-side setup.
+
+#### Step 1: Check the Ollama Version
+
+Thinking support arrived in Ollama v0.9.0. Check what you are running:
+
+```bash
+ollama --version
+```
+
+#### Step 2: Turn Thinking On for the Model
+
+Open **Model controls > Controls > Advanced Params** (or the model's **Advanced Params** in the model editor) and set **think (Ollama)** to **On**, or to **Custom** with a level (`low`, `medium`, `high` or `max`) for models such as GPT-OSS that accept only a level. **Default** leaves the choice to Ollama, which turns thinking on for supported models.
+
+#### Step 3: Verify in Open WebUI
+
+1. Go to Open WebUI and start a new chat with your reasoning model
+2. Ask a question that requires reasoning (e.g., a math problem or logic puzzle)
+3. The response should now show the thinking content in a collapsible section above the answer
+
+If the model writes its reasoning inline as `<think>...</think>` text instead of using Ollama's thinking field, check the **Reasoning Tags** setting above, and use **Custom** for any other tag pair.
+
+### Troubleshooting Checklist
+
+#### 1. Verify Ollama Separates the Thinking
+
+Run the model from the Ollama CLI with thinking on. A supported model prints the trace and the answer as two parts:
+
+```bash
+ollama run your-model:tag --think "Explain step by step: What is 15 + 27?"
+```
+
+If Ollama says the model does not support thinking, the model has no thinking mode, and Open WebUI can only pick up tags it writes into the text.
+
+#### 2. Check Model Compatibility
+
+Not all models output reasoning in the same format. Verify your model's documentation for:
+
+- What tags it uses for thinking content (e.g., `<think>`, `<reasoning>`, etc.)
+- Whether it requires specific prompting to enable thinking mode
+
+#### 3. Test with Streaming Enabled
+
+If non-streaming isn't working, try enabling streaming in your chat:
+
+1. Open **Model controls > Controls > Advanced Params** next to the message input
+2. Ensure streaming is enabled (this is the default)
+3. Test the model again
+
+#### 4. Check Open WebUI Version
+
+Ensure you're running the latest version of Open WebUI, as reasoning model support continues to improve:
+
+```bash
+docker pull ghcr.io/open-webui/open-webui:main
+```
+
+#### 5. Verify the Model Response Format
+
+Use the Ollama CLI directly to check what format your model outputs:
+
+```bash
+ollama run your-model:tag "Explain step by step: What is 15 + 27?"
+```
+
+Look for `<think>` tags in the output. If they're not present, the model may require specific system prompts to enable thinking mode.
+
+### Reasoning Lost Between Tool Calls
+
+**Symptom:** The model seems to "forget" what it was thinking about after a tool call completes.
+
+**Possible Causes:**
+1. The model doesn't output reasoning in a captured format (`reasoning_content`, `reasoning`, or `thinking` delta fields)
+2. The model uses text-based thinking tags that aren't being parsed as reasoning blocks
+
+**Solution:** Check if your model outputs reasoning through:
+- Structured delta fields (`reasoning_content`, `reasoning`, `thinking`)
+- Text-based tags that Open WebUI detects (ensure reasoning tag detection is enabled)
+
+### Anthropic Extended Thinking Not Working with Tool Calls
+
+**Symptom:** Using Anthropic's Claude models with extended thinking enabled, but tool calls fail with errors like:
+
+```
+Expected `thinking` or `redacted_thinking`, but found `text`. When `thinking` is enabled, 
+a final `assistant` message must start with a thinking block.
+```
+
+**Cause:** This is a fundamental architectural difference. Open WebUI follows the **OpenAI Chat Completions API standard** and does not natively support Anthropic's proprietary API format. Anthropic's extended thinking requires structured content blocks with `{"type": "thinking"}` or `{"type": "redacted_thinking"}`, which are Anthropic-specific formats that don't exist in the OpenAI standard.
+
+Open WebUI does not send Anthropic-style thinking blocks back, so Anthropic's requirement for structured thinking blocks is not met.
+
+**Why Open WebUI Doesn't Support This Natively:**
+
+There is no standard way for storing reasoning content as part of the API payload across different providers. If Open WebUI implemented support for one provider's format, it would likely break existing deployments for many other inference providers. Given the wide variety of backends Open WebUI supports, we follow the OpenAI Completions API as the common standard. For more details on this architectural decision, see our **[FAQ on protocol support](/faq#q-why-doesnt-open-webui-natively-support-provider-xs-proprietary-api)**.
+
+**Workarounds:**
+
+1. **Use a Pipe Function**: Create a custom [pipe function](/features/extensibility/plugin/functions/pipe) that converts Open WebUI's text-based thinking format to Anthropic's structured thinking blocks before sending requests to the Anthropic API.
+
+2. **Disable Extended Thinking**: If you don't need extended thinking for tool-calling workflows, disable it to avoid the format mismatch.
+
+:::note
+This limitation applies specifically to combining Anthropic's extended thinking with tool calls. Extended thinking works without tool calls, and tool calls work without extended thinking. The issue only occurs when using both features together via the Anthropic API.
+:::
+
+### Stateful Reasoning Models (GPT-5.6, etc.)
+
+**Symptom:** Using a model that hides its reasoning (stateful/internal reasoning), and reasoning is not being preserved.
+
+**Cause:** Some newer models (like GPT-5.6) keep their reasoning internal and don't expose it in the API response. Open WebUI can only preserve reasoning that is actually returned by the model.
+
+**Behavior:** If the model returns a reasoning summary instead of full reasoning content, that summary is what gets preserved and sent back.
+
+---
+
+## Frequently Asked Questions
+
+### Why is the thinking block showing as raw text?
+If the model uses tags that are not in the default list and have not been configured in `reasoning_tags`, Open WebUI will treat them as regular text. You can fix this by adding the correct tags to the `reasoning_tags` parameter in the Model Settings or under **Model controls > Controls** in the chat.
+
+### Does the model see its own thinking?
+
+It depends on the connection. Ollama, llama.cpp and the OpenAI Responses API get the model's earlier reasoning back, within a tool-call loop and across turns. Other Chat Completions connections do not. See [How Reasoning Is Sent Back](#how-reasoning-is-sent-back).

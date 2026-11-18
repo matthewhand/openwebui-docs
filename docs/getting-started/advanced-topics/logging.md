@@ -1,63 +1,111 @@
 ---
 sidebar_position: 5
-title: "📜 Open WebUI Logging"
+title: "Logging Open WebUI"
 ---
 
-## Browser Client Logging ##
+# Logging Open WebUI
 
-Client logging generally occurs via [JavaScript](https://developer.mozilla.org/en-US/docs/Web/API/console/log_static) `console.log()` and can be accessed using the built-in browser-specific developer tools:
-* Blink
-  * [Chrome/Chromium](https://developer.chrome.com/docs/devtools/)
-  * [Edge](https://learn.microsoft.com/en-us/microsoft-edge/devtools-guide-chromium/overview)
-* Gecko
-  * [Firefox](https://firefox-source-docs.mozilla.org/devtools-user/)
-* WebKit
-  * [Safari](https://developer.apple.com/safari/tools/)
+**Control what Open WebUI logs, where it goes, and how it's formatted, from quick debugging to production log pipelines.**
 
-## Application Server/Backend Logging ##
+Open WebUI has two logging surfaces: the **browser console** for frontend debugging and the **Python backend** for server-side events. Most configuration happens on the backend, where you can adjust verbosity with a single environment variable or switch to structured JSON output for log aggregators like Loki, Datadog, or CloudWatch.
 
-Logging is an ongoing work-in-progress but some level of control is available using environment variables. [Python Logging](https://docs.python.org/3/howto/logging.html) `log()` and `print()` statements send information to the console. The default level is `INFO`. Ideally, sensitive data will only be exposed with `DEBUG` level.
+---
 
-### Logging Levels ###
+## Frontend Logging
 
-The following [logging levels](https://docs.python.org/3/howto/logging.html#logging-levels) values are supported:
+The frontend uses standard browser `console.log()` calls. Open your browser's developer tools (**F12** or **Cmd+Option+I** on macOS), navigate to the **Console** tab, and you'll see informational messages, warnings, and errors from the client application.
 
-| Level      | Numeric value |
-| ---------- | ------------- |
-| `CRITICAL` | 50            |
-| `ERROR`    | 40            |
-| `WARNING`  | 30            |
-| `INFO`     | 20            |
-| `DEBUG`    | 10            |
-| `NOTSET`   | 0             |
+Browser-specific documentation:
 
-### Global ###
+- [Chrome/Chromium DevTools](https://developer.chrome.com/docs/devtools/)
+- [Firefox Developer Tools](https://firefox-source-docs.mozilla.org/devtools-user/)
+- [Safari Developer Tools](https://developer.apple.com/safari/tools/)
 
-The default global log level of `INFO` can be overridden with the `GLOBAL_LOG_LEVEL` environment variable. When set, this executes a [basicConfig](https://docs.python.org/3/library/logging.html#logging.basicConfig) statement with the `force` argument set to *True* within `config.py`. This results in reconfiguration of all attached loggers:
-> _If this keyword argument is specified as true, any existing handlers attached to the root logger are removed and closed, before carrying out the configuration as specified by the other arguments._
+---
 
-The stream uses standard output (`sys.stdout`). In addition to all Open-WebUI `log()` statements, this also affects any imported Python modules that use the Python Logging module `basicConfig` mechanism including [urllib](https://docs.python.org/3/library/urllib.html).
+## Backend Logging
 
-For example, to set `DEBUG` logging level as a Docker parameter use:
-```
+The backend uses Python's built-in `logging` module. By default, logs are written to **stdout** at the `INFO` level, making them visible in your terminal or container logs.
+
+### Log Levels
+
+| Level | Value | When to use |
+|---|---|---|
+| `CRITICAL` | 50 | Catastrophic failures; the application may terminate |
+| `ERROR` | 40 | Failed operations; the application continues but something broke |
+| `WARNING` | 30 | Unexpected situations worth investigating: deprecations, resource pressure |
+| `INFO` | 20 | Normal operation flow: startup, key events, request handling **(default)** |
+| `DEBUG` | 10 | Detailed diagnostic output: function calls, variable values, execution steps |
+
+---
+
+### Setting the Global Log Level
+
+Set `GLOBAL_LOG_LEVEL` to change verbosity for the entire backend. This configures the root Python logger via `logging.basicConfig(force=True)`, affecting all Open WebUI loggers and most third-party libraries.
+
+**Docker:**
+
+```bash
 --env GLOBAL_LOG_LEVEL="DEBUG"
 ```
 
-### App/Backend ###
+**Docker Compose:**
 
-Some level of granularity is possible using any of the following combination of variables. Note that `basicConfig` `force` isn't presently used so these statements may only affect Open-WebUI logging and not 3rd party modules.
+```yaml
+environment:
+  - GLOBAL_LOG_LEVEL=DEBUG
+```
 
-| Environment Variable | App/Backend                                                       |
-| -------------------- | ----------------------------------------------------------------- |
-| `AUDIO_LOG_LEVEL`    | Audio transcription using faster-whisper, TTS etc.                |
-| `COMFYUI_LOG_LEVEL`  | ComfyUI integration handling                                      |
-| `CONFIG_LOG_LEVEL`   | Configuration handling                                            |
-| `DB_LOG_LEVEL`       | Internal Peewee Database                                          |
-| `IMAGES_LOG_LEVEL`   | AUTOMATIC1111 stable diffusion image generation                   |
-| `LITELLM_LOG_LEVEL`  | LiteLLM proxy                                                     |
-| `MAIN_LOG_LEVEL`     | Main (root) execution                                             |
-| `MODELS_LOG_LEVEL`   | LLM model interaction, authentication, etc.                       |
-| `OLLAMA_LOG_LEVEL`   | Ollama backend interaction                                        |
-| `OPENAI_LOG_LEVEL`   | OpenAI interaction                                                |
-| `RAG_LOG_LEVEL`      | Retrieval-Augmented Generation using Chroma/Sentence-Transformers |
-| `WEBHOOK_LOG_LEVEL`  | Authentication webhook extended logging                           |
+:::tip
+Use `DEBUG` for development and troubleshooting. For production, stick with `INFO` or `WARNING` to keep log volume manageable.
+:::
+
+---
+
+### What the Log Level Costs
+
+Raising the level saves work as well as log volume, because a message the level filters out is never built. Knowledge searches write the found file names and full results only at `DEBUG`, as do the External, Firecrawl, Kagi, Mojeek, SearchApi, SerpApi, Serply and Yandex web search engines. `DEBUG` is the most expensive level to run, whole chat request payloads included, so set it back once you have chased down whatever you turned it on for.
+
+---
+
+### Structured JSON Logging
+
+For production environments using log aggregators, set `LOG_FORMAT=json` to switch all stdout output to single-line JSON objects.
+
+**Docker:**
+
+```bash
+--env LOG_FORMAT="json"
+```
+
+**Docker Compose:**
+
+```yaml
+environment:
+  - LOG_FORMAT=json
+```
+
+**JSON fields:**
+
+| Field | Description |
+|---|---|
+| `ts` | ISO 8601 timestamp |
+| `level` | Log level (`debug`, `info`, `warn`, `error`, `fatal`) |
+| `msg` | Log message |
+| `caller` | Source location (`module:function:line`) |
+| `extra` | Additional context data (if any) |
+| `error` | Error details (if applicable) |
+| `stacktrace` | Stack trace (if applicable) |
+
+**Example output:**
+
+```json
+{"ts": "2026-02-22T20:14:53.386+00:00", "level": "info", "msg": "GLOBAL_LOG_LEVEL: INFO", "caller": "open_webui.env"}
+{"ts": "2026-02-22T20:15:02.245+00:00", "level": "info", "msg": "Context impl SQLiteImpl.", "caller": "alembic.runtime.migration"}
+```
+
+:::note
+- Default behavior (no `LOG_FORMAT` set) is unchanged: plain-text output
+- The ASCII banner is suppressed when `LOG_FORMAT=json` to keep the log stream parseable
+- JSON logging covers both early startup logs (stdlib `logging`) and runtime logs (Loguru)
+:::

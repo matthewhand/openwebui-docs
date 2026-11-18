@@ -1,0 +1,147 @@
+---
+sidebar_position: 7
+title: "Open Responses"
+
+---
+
+## Overview
+
+Open WebUI has experimental support for **[Open Responses](https://www.openresponses.org/)**, an open specification for multi-provider, interoperable LLM interfaces. This guide walks you through enabling the Open Responses API for a connection.
+
+:::warning Experimental Feature
+This feature is currently experimental and may not work as expected with all providers.
+:::
+
+---
+
+## What is Open Responses?
+
+Open Responses is an open-source specification that standardizes how LLM requests and responses are structured across providers. It provides:
+
+- **One spec, many providers**: Describe inputs/outputs once; run on OpenAI, Anthropic, Gemini, or local models.
+- **Composable agentic loops**: Unified streaming, tool invocation, and message orchestration.
+- **Easier evaluation and routing**: Compare providers, route requests, and log results through a shared schema.
+
+Open Responses builds on the OpenAI Responses API format but is designed to work across any provider that implements the spec.
+
+---
+
+## Step 1: Add or Edit a Connection
+
+1. Go to **Settings > Connections** (admin section) and find the **Manage OpenAI API Connections** list.
+2. Click **Add Connection** to create one, or click **Configure** (the gear icon) on an existing connection to edit it.
+
+---
+
+## Step 2: Select the API Type
+
+In the connection modal, look for the **API Type** setting:
+
+- **Chat Completions** (default): Uses the standard OpenAI Chat Completions API format.
+- **Responses**: Uses the Open Responses API format.
+
+Click the toggle to switch to **Responses**.
+
+![API Type Toggle](/images/getting-started/quick-start/api-type-responses.gif)
+
+---
+
+## Step 3: Configure Your Provider
+
+Enter the connection details for a provider that supports the Open Responses format:
+
+- **URL**: Your provider's API endpoint
+- **API Key**: Your authentication credentials
+- **Model IDs**: (Optional) Specify specific models to use
+
+---
+
+## Step 4 (Optional): Enable Native Server-Side Tools
+
+Some providers, most notably **OpenAI**, expose **server-side tools** through the Responses API. The headline example is **native web search**: the model runs the search itself, then returns a grounded answer with source citations. Open WebUI forwards these tools to the provider and renders their results natively, so nothing else needs to be wired up.
+
+:::info This is separate from Open WebUI's Web Search
+Native server-side tools run entirely on the provider's side and only work on **API Type: Responses** connections (Steps 1 to 2 above). They are **independent** of Open WebUI's own [Web Search](/features/chat-conversations/web-search) providers (Tavily, SearXNG, etc.), you don't need to configure or enable those. Leave the model's **Web Search** capability **off**; the native tool replaces it, and enabling both is redundant.
+:::
+
+To turn on native web search for a model:
+
+1. Go to **Workspace → Models** and edit a model that uses your Responses connection.
+2. Expand **Advanced Params**.
+3. At the bottom, click **Add Custom Parameter** and set:
+   - **Name**: `tools`
+   - **Value**: `[{"type": "web_search"}]`
+4. Save the model.
+
+The model keeps Open WebUI's own tools. Notes, knowledge, tasks, tools attached to the model and the context of attached files all keep working, and the custom `tools` are sent alongside them.
+
+When you chat with that model, the provider performs web searches server-side, and Open WebUI streams:
+
+- A **"Web Search"** status block showing the queries the model ran.
+- **Clickable source citations** drawn from the results.
+- The model's grounded answer.
+
+:::tip Multiple tools and tool options
+The `tools` custom parameter accepts any tool your provider supports in the Responses API. Pass several by adding them to the array:
+
+```json
+[{"type": "web_search"}, {"type": "code_interpreter"}]
+```
+
+You can also include provider-specific options on a tool object (for web search, e.g. `search_context_size` or `user_location`). See your provider's Responses API documentation. Older OpenAI model snapshots may require `{"type": "web_search_preview"}` instead of `web_search`.
+:::
+
+:::warning Admin only
+The **Add Custom Parameter** button is shown to administrators in the model editor. Custom parameters are forwarded to the provider as-is, so only use valid Responses API tool definitions.
+:::
+
+:::info Custom parameters set instance-wide still apply
+The same button exists under **Model Defaults** in **Settings > Models** (admin section), which applies to every model. Custom parameters from the two places are combined name by name, so adding `tools` here keeps the instance-wide ones the model does not name. Use the same name in both places and the model's value is the one sent. See [Global Model Defaults](/features/workspace/models#global-model-defaults-admin).
+:::
+
+---
+
+## Supported Providers
+
+Open Responses is a new specification, so provider support is still growing. Check the [Open Responses website](https://www.openresponses.org/) for the latest list of compliant providers and implementations.
+
+---
+
+## Troubleshooting
+
+### Connection works with Chat Completions but not Responses
+
+Not all providers support the Open Responses format yet. Try:
+
+1. Switching back to Chat Completions
+2. Checking if your provider explicitly supports Open Responses
+3. Using a middleware proxy that can translate to Open Responses format
+
+### Streaming or tool calls behave unexpectedly
+
+Tool calls, re-invocations, and streaming are supported for Responses API connections. Open WebUI transparently converts between Chat Completions and Responses API formats, including tool call arguments, function call outputs, and multi-turn tool use. If you still encounter issues:
+
+1. Check the [Open WebUI Discord](https://discord.gg/5rJgQTnV4s) for known issues
+2. Report bugs on [GitHub](https://github.com/open-webui/open-webui/issues)
+
+### Providers that deviate from the Responses format
+
+Not every endpoint that advertises the Responses format emits it exactly, and Open WebUI absorbs the common deviations rather than losing the reply over them. A stream that closes reporting no content keeps whatever was already streamed. A fragment arriving before the item it belongs to is skipped without truncating the rest of the answer. A provider that hands over its finished message only at the very end has that message applied, so the reply and its citations are stored and carry into the next turn.
+
+Open WebUI cannot recover content the provider never sent. If replies are consistently short or empty, compare the same prompt against the provider's own API before reporting it here.
+
+### Stateful sessions
+
+By default, Open WebUI treats Responses API connections as **stateless**: it manages conversation history locally and sends the full context with each request. If your upstream provider supports **stateful sessions** (server-side response storage with `previous_response_id` anchoring, e.g., direct OpenAI connections), you can enable `ENABLE_RESPONSES_API_STATEFUL=true` to let the provider manage conversation state.
+
+:::warning
+Most proxies and third-party Responses API endpoints are stateless and will break if stateful mode is enabled. Only use this with providers that explicitly support stateful Responses API sessions.
+:::
+
+---
+
+## Learn More
+
+- **[Open Responses Specification](https://www.openresponses.org/specification)**: Full technical specification
+- **[Open Responses GitHub](https://github.com/openresponses/openresponses)**: Source code and discussions
+- **[FAQ: Why doesn't Open WebUI natively support proprietary APIs?](/faq#q-why-doesnt-open-webui-natively-support-provider-xs-proprietary-api)**: Learn about our protocol-first philosophy
